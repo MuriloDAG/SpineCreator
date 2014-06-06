@@ -131,14 +131,16 @@ RESOURCES += \
     icons.qrc
 
 win32:release{
-    LIBS += "-Lc:/Program Files/Graphviz2.26.3/lib/release/lib" -lgvc -lgraph -lGLU32
-    INCLUDEPATH += "c:/Program Files/Graphviz2.26.3/include"
-    DEPENDPATH += "c:/Program Files/Graphviz2.26.3/lib/release/lib"
+    LIBS += "-Lc:/Program Files (x86)/Graphviz2.26.3/lib/release/lib" "-Lc:/Python27/libs" -lgvc -lgraph -lGLU32 -lpython27
+    INCLUDEPATH += "c:/Program Files (x86)/Graphviz2.26.3/include"
+    INCLUDEPATH += "c:/Python27/include"
+    DEPENDPATH += "c:/Program Files (x86)/Graphviz2.26.3/lib/release/lib"
 }
 win32:debug{
-    LIBS += "-Lc:/Program Files/Graphviz2.26.3/lib/debug/lib" -lgvc -lgraph -lGLU32
-    INCLUDEPATH += "c:/Program Files/Graphviz2.26.3/include"
-    DEPENDPATH += "c:/Program Files/Graphviz2.26.3/lib/debug/lib"
+    LIBS += "-Lc:/Program Files (x86)/Graphviz2.26.3/lib/debug/lib" "-Lc:/Python27/libs" -lgvc -lgraph -lGLU32 -lpython27
+    INCLUDEPATH += "c:/Program Files (x86)/Graphviz2.26.3/include"
+    INCLUDEPATH += "c:/Python27/include"
+    DEPENDPATH += "c:/Program Files (x86)/Graphviz2.26.3/lib/debug/lib"
 }
 linux-g++{
     LIBS += -L/usr/lib/graphviz -lgvc -lgraph -lGLU -lpython2.7

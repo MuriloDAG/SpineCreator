@@ -55,7 +55,7 @@ glConnectionWidget::glConnectionWidget(rootData * data, QWidget *parent) : QGLWi
     selectedObject = NULL;
     setAutoFillBackground(false);
     popIndicesShown = false;
-    selectedIndex = 0;
+    selectedIndex = -1;
     selectedType = 1;
     connGenerationMutex = new QMutex;
     imageSaveMode = false;
@@ -93,7 +93,7 @@ void glConnectionWidget::clear() {
     popLogs.clear();
     selectedConns.clear();
     connections.clear();
-    selectedIndex = 0;
+    selectedIndex = -1;
     selectedType = 1;
     model = (QAbstractTableModel *)0;
 
@@ -1053,7 +1053,7 @@ void glConnectionWidget::selectionChanged(QItemSelection top, QItemSelection) {
 
     // reset nrn index etc...
     selectedType = 1;
-    selectedIndex = 0;
+    selectedIndex = -1;
 
     // cancel current selection
     selectedObject = NULL;
@@ -1706,7 +1706,7 @@ void glConnectionWidget::connectionDataChanged(QModelIndex, QModelIndex) {
 
 void glConnectionWidget::connectionSelectionChanged(QItemSelection, QItemSelection) {
 
-    this->selectedIndex = 0;
+    this->selectedIndex = -1;
     this->selectedType = 1;
 
     this->selection = ((QItemSelectionModel *) sender())->selectedIndexes();
