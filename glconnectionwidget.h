@@ -103,6 +103,7 @@ private:
     rootData * data;
     loc3f loc3Offset;
     systemObject * selectedObject;
+    unsigned int hoveredNeuron;
     int selectedIndex;
     int selectedType;
     QString last_distance_based_equation;

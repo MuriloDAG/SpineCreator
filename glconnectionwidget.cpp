@@ -25,6 +25,8 @@
 #include "glconnectionwidget.h"
 #include "connectionmodel.h"
 #include "systemmodel.h"
+#include <time.h>
+#include <math.h>
 #ifdef Q_OS_MAC
 #include "glu.h"
 #else
@@ -55,6 +57,7 @@ glConnectionWidget::glConnectionWidget(rootData * data, QWidget *parent) : QGLWi
     selectedObject = NULL;
     setAutoFillBackground(false);
     popIndicesShown = false;
+    hoveredNeuron = 2;
     selectedIndex = -1;
     selectedType = 1;
     connGenerationMutex = new QMutex;
@@ -183,7 +186,6 @@ void glConnectionWidget::updateLogData() {
 
 }
 
-
 void glConnectionWidget::resizeGL(int, int)
 {
 
@@ -230,6 +232,9 @@ void glConnectionWidget::allowRepaint() {
 void glConnectionWidget::paintEvent(QPaintEvent * /*event*/ )
 {
 
+    //qDebug() << "MURILO - Paint event Start";
+    //double clock1 = clock();
+
     // avoid repainting too fast
     if (this->repaintAllowed == false) {
         return;
@@ -254,8 +259,6 @@ void glConnectionWidget::paintEvent(QPaintEvent * /*event*/ )
         qglClearColor(qtCol.light());
     }
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    //glClearColor(0.0,0.0,0.0,1.0);
 
     // setup
     glEnable(GL_BLEND);
@@ -311,7 +314,9 @@ void glConnectionWidget::paintEvent(QPaintEvent * /*event*/ )
             int LoD = round(250.0f/float(locations[0].size())*pow(2,float(quality)));
             // put some bounds on
             if (LoD < 4) LoD = 4; if (LoD > 32) LoD = 32;
-            this->drawNeuron(0.5, LoD, LoD, QColor(100,100,100,255));
+
+            if (i != hoveredNeuron)
+                this->drawNeuron(0.5, LoD, LoD, QColor(100,100,100,255));
 
             glPopMatrix();
         }
@@ -361,9 +366,15 @@ void glConnectionWidget::paintEvent(QPaintEvent * /*event*/ )
             }
 
             if (popColours[locNum].size() > 0) {
-                this->drawNeuron(0.5, LoD, LoD, popColours[locNum][i]);
+                if (i != hoveredNeuron)
+                    this->drawNeuron(0.5, LoD, LoD, popColours[locNum][i]);
+                else
+                    this->drawNeuron(1, LoD, LoD, popColours[locNum][i]);
             } else
-                this->drawNeuron(0.5, LoD, LoD, QColor(100 + 0.5*currPop->colour.red(),100 + 0.5*currPop->colour.green(),100 + 0.5*currPop->colour.blue(),255));
+                if (i != hoveredNeuron)
+                    this->drawNeuron(0.5, LoD, LoD, QColor(100 + 0.5*currPop->colour.red(),100 + 0.5*currPop->colour.green(),100 + 0.5*currPop->colour.blue(),255));
+                else
+                    this->drawNeuron(1, LoD, LoD, QColor(100 + 0.5*currPop->colour.red(),100 + 0.5*currPop->colour.green(),100 + 0.5*currPop->colour.blue(),255));
 
             glPopMatrix();
         }
@@ -456,8 +467,9 @@ void glConnectionWidget::paintEvent(QPaintEvent * /*event*/ )
                     glColor4f(0.0, 0.0, 0.0, 0.1);
 
                     // draw in
-                    glBegin(GL_LINES);
-                    if (src->isVisualised && dst->isVisualised) {
+
+                    // Decide the control points
+                    /*if (src->isVisualised && dst->isVisualised) {
                         glVertex3f(src->layoutType->locations[connections[targNum][i].src].x+srcX, src->layoutType->locations[connections[targNum][i].src].y+srcY, src->layoutType->locations[connections[targNum][i].src].z+srcZ);
                         glVertex3f(dst->layoutType->locations[connections[targNum][i].dst].x+dstX, dst->layoutType->locations[connections[targNum][i].dst].y+dstY, dst->layoutType->locations[connections[targNum][i].dst].z+dstZ);
                     }
@@ -468,10 +480,47 @@ void glConnectionWidget::paintEvent(QPaintEvent * /*event*/ )
                     if (!src->isVisualised && dst->isVisualised) {
                         glVertex3f(src->loc3.x, src->loc3.y, src->loc3.z);
                         glVertex3f(dst->layoutType->locations[connections[targNum][i].dst].x, dst->layoutType->locations[connections[targNum][i].dst].y, dst->layoutType->locations[connections[targNum][i].dst].z);
+                    }*/
+                    GLfloat ctrlpoints[4][3];
+                    if (src->isVisualised && dst->isVisualised) {
+                        GLfloat ctrlpoints[4][3] = {
+                            {src->layoutType->locations[connections[targNum][i].src].x+srcX, src->layoutType->locations[connections[targNum][i].src].y+srcY, src->layoutType->locations[connections[targNum][i].src].z+srcZ},
+                            {src->layoutType->locations[connections[targNum][i].src].x+srcX, dst->layoutType->locations[connections[targNum][i].dst].y+dstY, dst->layoutType->locations[connections[targNum][i].dst].z+dstZ},
+                            {dst->layoutType->locations[connections[targNum][i].dst].x+dstX, src->layoutType->locations[connections[targNum][i].src].y+srcY, src->layoutType->locations[connections[targNum][i].src].z+srcZ},
+                            {dst->layoutType->locations[connections[targNum][i].dst].x+dstX, dst->layoutType->locations[connections[targNum][i].dst].y+dstY, dst->layoutType->locations[connections[targNum][i].dst].z+dstZ}
+                        };
                     }
+                    if (src->isVisualised && !dst->isVisualised) {
+                        qDebug() << "[MURILO TODO] - Drawing line 2";
+                        GLfloat ctrlpoints[4][3] = {
+                            {src->layoutType->locations[connections[targNum][i].src].x, src->layoutType->locations[connections[targNum][i].src].y, src->layoutType->locations[connections[targNum][i].src].z},
+                            {src->layoutType->locations[connections[targNum][i].src].x, dstY, dstZ},
+                            {dstX, src->layoutType->locations[connections[targNum][i].src].y, src->layoutType->locations[connections[targNum][i].src].z},
+                            {dstX, dstY, dstZ}
+                        };
+                    }
+                    if (!src->isVisualised && dst->isVisualised) {
+                        qDebug() << "[MURILO TODO] - Drawing line 3";
+                        GLfloat ctrlpoints[4][3] = {
+                            {src->loc3.x, src->loc3.y, src->loc3.z},
+                            {src->loc3.x, dst->layoutType->locations[connections[targNum][i].dst].y, dst->layoutType->locations[connections[targNum][i].dst].z},
+                            {dst->layoutType->locations[connections[targNum][i].dst].x, src->loc3.y, src->loc3.z},
+                            {dst->layoutType->locations[connections[targNum][i].dst].x, dst->layoutType->locations[connections[targNum][i].dst].y, dst->layoutType->locations[connections[targNum][i].dst].z}
+                        }; }
+
+
+
+
+                    glMap1f(GL_MAP1_VERTEX_3, 0.0, 1.0, 3, 4, &ctrlpoints[0][0]);
+                    glEnable(GL_MAP1_VERTEX_3);
+
+                    // Draw the line between the neurons
+                    glBegin(GL_LINE_STRIP);
+
+                    for (int i = 0; i <= 30; i++)
+                        glEvalCoord1f((GLfloat) i/30.0);
+
                     glEnd();
-
-
 
                 } else {
                     // ERR - CONNECTION INDEX OUT OF RANGE
@@ -524,24 +573,42 @@ void glConnectionWidget::paintEvent(QPaintEvent * /*event*/ )
 
                         if (isSelected) {
                             // draw in
-                            glBegin(GL_LINES);
+
+                            // Decide the control points
+                            GLfloat ctrlpoints[4][3];
                             if (src->isVisualised && dst->isVisualised) {
-                                glVertex3f(src->layoutType->locations[connections[targNum][i].src].x+srcX, src->layoutType->locations[connections[targNum][i].src].y+srcY, src->layoutType->locations[connections[targNum][i].src].z+srcZ);
-                                glVertex3f(dst->layoutType->locations[connections[targNum][i].dst].x+dstX, dst->layoutType->locations[connections[targNum][i].dst].y+dstY, dst->layoutType->locations[connections[targNum][i].dst].z+dstZ);
+                                GLfloat ctrlpoints[4][3] = {
+                                    {src->layoutType->locations[connections[targNum][i].src].x+srcX, src->layoutType->locations[connections[targNum][i].src].y+srcY, src->layoutType->locations[connections[targNum][i].src].z+srcZ},
+                                    {src->layoutType->locations[connections[targNum][i].src].x+srcX, dst->layoutType->locations[connections[targNum][i].dst].y+dstY, dst->layoutType->locations[connections[targNum][i].dst].z+dstZ},
+                                    {dst->layoutType->locations[connections[targNum][i].dst].x+dstX, src->layoutType->locations[connections[targNum][i].src].y+srcY, src->layoutType->locations[connections[targNum][i].src].z+srcZ},
+                                    {dst->layoutType->locations[connections[targNum][i].dst].x+dstX, dst->layoutType->locations[connections[targNum][i].dst].y+dstY, dst->layoutType->locations[connections[targNum][i].dst].z+dstZ}
+                                };
                             }
                             if (src->isVisualised && !dst->isVisualised) {
-                                glVertex3f(src->layoutType->locations[connections[targNum][i].src].x, src->layoutType->locations[connections[targNum][i].src].y, src->layoutType->locations[connections[targNum][i].src].z);
-                                glVertex3f(dstX, dstY, dstZ);
+                                qDebug() << "[MURILO TODO] - Drawing line 2";
+                                //glVertex3f(src->layoutType->locations[connections[targNum][i].src].x, src->layoutType->locations[connections[targNum][i].src].y, src->layoutType->locations[connections[targNum][i].src].z);
+                                //glVertex3f(dstX, dstY, dstZ);
                             }
                             if (!src->isVisualised && dst->isVisualised) {
-                                glVertex3f(src->loc3.x, src->loc3.y, src->loc3.z);
-                                glVertex3f(dst->layoutType->locations[connections[targNum][i].dst].x, dst->layoutType->locations[connections[targNum][i].dst].y, dst->layoutType->locations[connections[targNum][i].dst].z);
+                                qDebug() << "[MURILO TODO] - Drawing line 3";
+                                //glVertex3f(src->loc3.x, src->loc3.y, src->loc3.z);
+                                //glVertex3f(dst->layoutType->locations[connections[targNum][i].dst].x, dst->layoutType->locations[connections[targNum][i].dst].y, dst->layoutType->locations[connections[targNum][i].dst].z);
                             }
+
+
+
+
+                            glMap1f(GL_MAP1_VERTEX_3, 0.0, 1.0, 3, 4, &ctrlpoints[0][0]);
+                            glEnable(GL_MAP1_VERTEX_3);
+
+                            // Draw the line between the neurons
+                            glBegin(GL_LINE_STRIP);
+
+                            for (int i = 0; i <= 30; i++)
+                                glEvalCoord1f((GLfloat) i/30.0);
+
                             glEnd();
                         }
-
-
-
                     } else {
                         // ERR - CONNECTION INDEX OUT OF RANGE
                     }
@@ -551,7 +618,6 @@ void glConnectionWidget::paintEvent(QPaintEvent * /*event*/ )
             connGenerationMutex->unlock();
 
         }
-
 
         if (conn->type == OnetoOne) {
 
@@ -824,7 +890,11 @@ void glConnectionWidget::paintEvent(QPaintEvent * /*event*/ )
 
     glPopMatrix();
 
+    //double diffticks=clock()-clock1;
+    //double diffms=(diffticks)/(CLOCKS_PER_SEC/1000);
 
+    //qDebug() << "MURILO - Paint event End, Time elapsed";
+    //qDebug() << diffms;
 }
 
 void glConnectionWidget::drawNeuron(GLfloat r, int rings, int segments, QColor col) {
@@ -1724,6 +1794,14 @@ void glConnectionWidget::mousePressEvent(QMouseEvent *event){
     origRot = event->globalPos();
     origRot.setX(origRot.x() - rot.x()*2);
     origRot.setY(origRot.y() - rot.y()*2);
+
+
+    qDebug() << "MURILO - Mouse";
+    qDebug() << event->x();
+    qDebug() << event->y();
+
+    qDebug() << this->width();
+    qDebug() << this->height();
 
 }
 
