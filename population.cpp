@@ -47,6 +47,7 @@ population::population(float x, float y, float size, float aspect_ratio, QString
     this->neuronTypeName = "none";
     this->numNeurons = 1;
     this->colour = QColor(0,0,0,255);
+    this->dlIndex = -1;
     this->type = populationObject;
     this->isVisualised = false;
     loc3.x = 0;

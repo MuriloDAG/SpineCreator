@@ -86,6 +86,7 @@ public:
     void makeSpikeSource();
 
     QColor colour;
+    int dlIndex;
 
 //private:
     float x;
