@@ -530,7 +530,110 @@ void viewVZLayoutEditHandler::initConnection() {
     QSettings settings;
     bool devMode = settings.value("dev_mode_on", "false").toBool();
 
-    connectionComboBox = this->addDropBox(panelLayout, "Connectivity", "will_be_overriden");
+    /* GUARD */
+
+    QHBoxLayout * tempBox = new QHBoxLayout();
+    panelLayout->addLayout(tempBox);
+/*
+    sizeSpin = new QSpinBox;
+    sizeSpin->setRange(1, 2000000);
+    sizeSpin->setSingleStep(1);
+    sizeSpin->setFocusPolicy(Qt::StrongFocus);
+    sizeSpin->installEventFilter(new FilterOutUndoRedoEvents);
+    tempBox->addWidget(sizeSpin);
+
+    // connect for hide
+    connect(this, SIGNAL(hideAll()), sizeSpin, SLOT(hide()));
+    // connect for show
+    connect(this, SIGNAL(showPopulation()), sizeSpin, SLOT(show()));
+    // connect for set value
+    connect(this, SIGNAL(setPopulationSize(int)), sizeSpin, SLOT(setValue(int)));
+
+    connect(sizeSpin, SIGNAL(editingFinished()), this->data, SLOT (setSize()));
+    connect(sizeSpin, SIGNAL(valueChanged(int)), this->viewVZ->OpenGLWidget, SLOT (parsChangedPopulation(int)));
+
+    tempBox->addStretch();
+
+    ///// LOCATION
+*/
+    QLabel * locationLabel = new QLabel("<b>3D location</b>");
+    tempBox->addWidget(locationLabel);
+    // connect for hide
+   /* connect(this, SIGNAL(hideAll()), locationLabel, SLOT(hide()));
+    // connect for show
+    connect(this, SIGNAL(showPopulation()), locationLabel, SLOT(show()));
+
+    // spinboxes for x, y, z
+
+    QLabel * xLabel = new QLabel("x");
+    // connect for hide
+    connect(this, SIGNAL(hideAll()), xLabel, SLOT(hide()));
+    // connect for show
+    connect(this, SIGNAL(showPopulation()), xLabel, SLOT(show()));
+    tempBox->addWidget(xLabel);
+    xSpin = new QSpinBox;
+    xSpin->setRange(-10000, 10000);
+    xSpin->setSingleStep(1);
+    xSpin->setMaximumWidth(70);
+    xSpin->setProperty("type", 0);
+    xSpin->setFocusPolicy(Qt::StrongFocus);
+    xSpin->installEventFilter(new FilterOutUndoRedoEvents);
+    tempBox->addWidget(xSpin);
+
+    // connect for hide
+    connect(this, SIGNAL(hideAll()), xSpin, SLOT(hide()));
+    // connect for show
+    connect(this, SIGNAL(showPopulation()), xSpin, SLOT(show()));
+    // connect for set value
+    connect(this, SIGNAL(setPopulationX(int)), xSpin, SLOT(setValue(int)));
+
+    QLabel * yLabel = new QLabel("y");
+    // connect for hide
+    connect(this, SIGNAL(hideAll()), yLabel, SLOT(hide()));
+    // connect for show
+    connect(this, SIGNAL(showPopulation()), yLabel, SLOT(show()));
+    tempBox->addWidget(yLabel);
+    ySpin = new QSpinBox;
+    ySpin->setRange(-10000, 10000);
+    ySpin->setSingleStep(1);
+    ySpin->setMaximumWidth(70);
+    ySpin->setProperty("type", 1);
+    ySpin->setFocusPolicy(Qt::StrongFocus);
+    ySpin->installEventFilter(new FilterOutUndoRedoEvents);
+    tempBox->addWidget(ySpin);
+
+    // connect for hide
+    connect(this, SIGNAL(hideAll()), ySpin, SLOT(hide()));
+    // connect for show
+    connect(this, SIGNAL(showPopulation()), ySpin, SLOT(show()));
+    // connect for set value
+    connect(this, SIGNAL(setPopulationY(int)), ySpin, SLOT(setValue(int)));
+
+    QLabel * zLabel = new QLabel("z");
+    // connect for hide
+    connect(this, SIGNAL(hideAll()), zLabel, SLOT(hide()));
+    // connect for show
+    connect(this, SIGNAL(showPopulation()), zLabel, SLOT(show()));
+    tempBox->addWidget(zLabel);
+    zSpin = new QSpinBox;
+    zSpin->setRange(-10000, 10000);
+    zSpin->setSingleStep(1);
+    zSpin->setMaximumWidth(70);
+    zSpin->setProperty("type", 2);
+    zSpin->setFocusPolicy(Qt::StrongFocus);
+    zSpin->installEventFilter(new FilterOutUndoRedoEvents);
+    tempBox->addWidget(zSpin);
+
+    // connect for hide
+    connect(this, SIGNAL(hideAll()), zSpin, SLOT(hide()));
+    // connect for show
+    connect(this, SIGNAL(showPopulation()), zSpin, SLOT(show()));
+    // connect for set value
+    connect(this, SIGNAL(setPopulationZ(int)), zSpin, SLOT(setValue(int)));
+    */
+
+
+    connectionComboBox = this->addDropBox(panelLayout, "Connectivity1", "will_be_overriden");
     this->updateConnectionList();
     /*connectionComboBox->addItem("All to All");
     connectionComboBox->addItem("One to One");
@@ -749,7 +852,6 @@ void viewVZLayoutEditHandler::redrawHeaders()
         drawDeletables();
     }
 }
-
 
 void viewVZLayoutEditHandler::redrawProperties() {
 
@@ -1217,6 +1319,7 @@ void viewVZLayoutEditHandler::drawDeletables() {
             genericInput * currIn = (genericInput *) this->viewVZ->currObject;
             currConn = currIn->connectionType;
         }
+
 
         // change display options based on type of connection
         if (currConn->type != CSV || ((csv_connection *) currConn)->generator != NULL) {

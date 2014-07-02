@@ -87,6 +87,7 @@ public:
 
     QColor colour;
     int dlIndex;
+    int dlIndexCol;
 
 //private:
     float x;

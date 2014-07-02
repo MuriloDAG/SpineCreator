@@ -88,8 +88,8 @@ public:
 private:
     void drawNeuron(GLfloat, int, int, QColor);
     void setupView();
-    GLuint createPopulationsDL();
-    GLuint createConnectionsDL();
+    void createPopulationsDL();
+    void createConnectionsDL();
     QString currentObjectName;
     QAbstractTableModel * model;
     QAbstractItemModel * sysModel;
@@ -106,9 +106,8 @@ private:
     loc3f loc3Offset;
     systemObject * selectedObject;
     int aux_strength;
-    GLuint dlPopulations;
-    GLuint dlConnections;
     unsigned int hoveredNeuron;
+    int dlIndex;
     int selectedIndex;
     int selectedType;
     QString last_distance_based_equation;

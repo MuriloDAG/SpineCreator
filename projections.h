@@ -71,6 +71,11 @@ public:
     projection * proj;
     QString getName();
     virtual void delAll(rootData *);
+
+    int dlIndex;
+
+    GLfloat center[3];
+    int strength;
 };
 
 class projection : public systemObject

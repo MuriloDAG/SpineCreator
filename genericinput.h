@@ -67,6 +67,7 @@ public:
     connection * connectionType;
 
     bool isVisualised;
+    int dlIndex;
 
 
 };
