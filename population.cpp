@@ -48,6 +48,7 @@ population::population(float x, float y, float size, float aspect_ratio, QString
     this->numNeurons = 1;
     this->colour = QColor(0,0,0,255);
     this->dlIndex = -1;
+    this->dlIndexCol = -1;
     this->type = populationObject;
     this->isVisualised = false;
     loc3.x = 0;
@@ -75,6 +76,8 @@ population::population(population * data)
     this->neuronTypeName = data->neuronTypeName;
     this->numNeurons = data->numNeurons;
     this->colour = data->colour;
+    this->dlIndex = -1;
+    this->dlIndexCol = -1;
     this->type = populationObject;
     this->isVisualised = false;
     loc3.x = data->loc3.x;
@@ -110,6 +113,8 @@ population::population(QDomElement  &e, QDomDocument *, QDomDocument * meta, pro
     this->neuronTypeName = "none";
     this->numNeurons = 1;
     this->colour = QColor(0,0,0,255);
+    this->dlIndex = -1;
+    this->dlIndexCol = -1;
     this->type = populationObject;
     this->isVisualised = false;
     loc3.x = 0;

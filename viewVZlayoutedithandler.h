@@ -88,6 +88,12 @@ private:
     QSpinBox * xSpin;
     QSpinBox * ySpin;
     QSpinBox * zSpin;
+    // spinboxes to connection center and strength
+    QSpinBox * strengthSpin;
+    QSpinBox * xConSpin;
+    QSpinBox * yConSpin;
+    QSpinBox * zConSpin;
+
 
     // kernel
     QComboBox * kernelComboBox;
@@ -107,6 +113,12 @@ signals:
     void setPopulationZ(int);
     void setMinDistance(double);
     void setSeed(int);
+
+    // set up connection
+    void setConnectionStrength(int);
+    void setConnectionCenterX(int);
+    void setConnectionCenterY(int);
+    void setConnectionCenterZ(int);
 
     void deleteProperties();
 

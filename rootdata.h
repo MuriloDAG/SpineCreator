@@ -155,7 +155,9 @@ public slots:
     void updatePar(int);
     void updateLayoutPar();
     void setSize();
+    void setStrength();
     void setLoc3();
+    void setCenter();
     void addPopulation();
     void addSpikeSource();
     void renamePopulation();
@@ -225,6 +227,26 @@ private:
      * population is selected; otherwise NULL.
      */
     population* currSelPopulation();
+
+    /*!
+     * \brief Obtain the currently selected synapses
+     *
+     * \return A vector of pointers to all currently selected
+     * synapses.
+     */
+    vector<synapse*> currSelConnections();
+
+    /*!
+     * \brief Obtain the currently selected synapse.
+     *
+     * Obtain the currently selected synapse if only a single
+     * synapse is selected. If no synapses are selected, return
+     * NULL. If more than one synapse is selected, return NULL.
+     *
+     * \return pointer to the selected synapse, if only a single
+     * synapse is selected; otherwise NULL.
+     */
+    synapse* currSelConnection();
 
     /*!
      * Action to take when a mouse down event has changed selected objects.

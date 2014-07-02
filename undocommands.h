@@ -281,6 +281,22 @@ private:
     bool firstRedo;
 };
 
+class setStrengthUndo : public QUndoCommand
+{
+public:
+    setStrengthUndo(rootData * data, synapse * ptr, int value, QUndoCommand *parent = 0);
+    void undo();
+    void redo();
+
+private:
+    // these references are needed for the redo and undo
+    rootData * data;
+    synapse * ptr;
+    int oldValue;
+    int value;
+    bool firstRedo;
+};
+
 class setLoc3Undo : public QUndoCommand
 {
 public:
@@ -292,6 +308,22 @@ private:
     // these references are needed for the redo and undo
     rootData * data;
     population * ptr;
+    int oldValue;
+    int value;
+    int index;
+};
+
+class setCenterUndo : public QUndoCommand
+{
+public:
+    setCenterUndo(rootData * data, synapse * ptr, int index, int value, QUndoCommand *parent = 0);
+    void undo();
+    void redo();
+
+private:
+    // these references are needed for the redo and undo
+    rootData * data;
+    synapse * ptr;
     int oldValue;
     int value;
     int index;

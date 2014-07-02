@@ -136,6 +136,7 @@ signals:
 public slots:
     void redraw();
     void redraw(int);
+    void updateConnectionCenter();
     void selectionChanged(QItemSelection top, QItemSelection);
     void parsChangedPopulation(double);
     void parsChangedPopulation(int);

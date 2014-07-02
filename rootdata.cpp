@@ -1457,6 +1457,32 @@ population* rootData::currSelPopulation()
     return currSel;
 }
 
+vector<synapse*> rootData::currSelConnections()
+{
+    // get the currently selected populations (ALL of them)
+    vector<synapse*> currSel;
+    vector<systemObject*>::const_iterator i = this->selList.begin();
+    while (i != this->selList.end()) {
+        if ((*i)->type == synapseObject) {
+            currSel.push_back (static_cast<synapse*>(*i));
+        }
+        ++i;
+    }
+    return currSel;
+}
+
+synapse* rootData::currSelConnection()
+{
+    // get the currently selected population
+    synapse* currSel = NULL;
+    if (this->selList.size() == 1) {
+        if (this->selList[0]->type == synapseObject) {
+            currSel = (synapse*) this->selList[0];
+        }
+    }
+    return currSel;
+}
+
 void rootData::updateLayoutPar()
 {
     // get the currently selected population
@@ -1505,6 +1531,25 @@ void rootData::setSize()
     }
 }
 
+void rootData::setStrength()
+{
+    // get the currently selected population
+    synapse * currSel = this->currSelConnection();
+
+
+    if (currSel == NULL) {
+        return;
+    }
+
+    // get value
+    int value = ((QSpinBox *) sender())->value();
+
+    // only update if we have a change
+    if (value != currSel->strength) {
+        currProject->undoStack->push(new setStrengthUndo(this, currSel, value));
+    }
+}
+
 void rootData::setLoc3()
 {
     // get the currently selected population
@@ -1518,6 +1563,21 @@ void rootData::setLoc3()
     int value = ((QSpinBox *) sender())->value();
 
     currProject->undoStack->push(new setLoc3Undo(this, currSel, index, value));
+}
+
+void rootData::setCenter()
+{
+    // get the currently selected population
+    synapse * currSel = this->currSelConnection();
+
+    if (currSel == NULL) {
+        return;
+    }
+
+    int index = sender()->property("type").toInt();
+    int value = ((QSpinBox *) sender())->value();
+
+    currProject->undoStack->push(new setCenterUndo(this, currSel, index, value));
 }
 
 void rootData::renamePopulation()

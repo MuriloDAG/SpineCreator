@@ -534,34 +534,13 @@ void viewVZLayoutEditHandler::initConnection() {
 
     QHBoxLayout * tempBox = new QHBoxLayout();
     panelLayout->addLayout(tempBox);
-/*
-    sizeSpin = new QSpinBox;
-    sizeSpin->setRange(1, 2000000);
-    sizeSpin->setSingleStep(1);
-    sizeSpin->setFocusPolicy(Qt::StrongFocus);
-    sizeSpin->installEventFilter(new FilterOutUndoRedoEvents);
-    tempBox->addWidget(sizeSpin);
 
+    QLabel * centerLabel = new QLabel("<b>Center Location</b>");
+    tempBox->addWidget(centerLabel);
     // connect for hide
-    connect(this, SIGNAL(hideAll()), sizeSpin, SLOT(hide()));
+    connect(this, SIGNAL(hideAll()), centerLabel, SLOT(hide()));
     // connect for show
-    connect(this, SIGNAL(showPopulation()), sizeSpin, SLOT(show()));
-    // connect for set value
-    connect(this, SIGNAL(setPopulationSize(int)), sizeSpin, SLOT(setValue(int)));
-
-    connect(sizeSpin, SIGNAL(editingFinished()), this->data, SLOT (setSize()));
-    connect(sizeSpin, SIGNAL(valueChanged(int)), this->viewVZ->OpenGLWidget, SLOT (parsChangedPopulation(int)));
-
-    tempBox->addStretch();
-
-    ///// LOCATION
-*/
-    QLabel * locationLabel = new QLabel("<b>3D location</b>");
-    tempBox->addWidget(locationLabel);
-    // connect for hide
-   /* connect(this, SIGNAL(hideAll()), locationLabel, SLOT(hide()));
-    // connect for show
-    connect(this, SIGNAL(showPopulation()), locationLabel, SLOT(show()));
+    connect(this, SIGNAL(showConnection()), centerLabel, SLOT(show()));
 
     // spinboxes for x, y, z
 
@@ -569,71 +548,122 @@ void viewVZLayoutEditHandler::initConnection() {
     // connect for hide
     connect(this, SIGNAL(hideAll()), xLabel, SLOT(hide()));
     // connect for show
-    connect(this, SIGNAL(showPopulation()), xLabel, SLOT(show()));
+    connect(this, SIGNAL(showConnection()), xLabel, SLOT(show()));
     tempBox->addWidget(xLabel);
-    xSpin = new QSpinBox;
-    xSpin->setRange(-10000, 10000);
-    xSpin->setSingleStep(1);
-    xSpin->setMaximumWidth(70);
-    xSpin->setProperty("type", 0);
-    xSpin->setFocusPolicy(Qt::StrongFocus);
-    xSpin->installEventFilter(new FilterOutUndoRedoEvents);
-    tempBox->addWidget(xSpin);
+    xConSpin = new QSpinBox;
+    xConSpin->setRange(-10000, 10000);
+    xConSpin->setSingleStep(1);
+    xConSpin->setMaximumWidth(70);
+    xConSpin->setProperty("type", 0);
+    xConSpin->setFocusPolicy(Qt::StrongFocus);
+    xConSpin->installEventFilter(new FilterOutUndoRedoEvents);
+    tempBox->addWidget(xConSpin);
 
     // connect for hide
-    connect(this, SIGNAL(hideAll()), xSpin, SLOT(hide()));
+    connect(this, SIGNAL(hideAll()), xConSpin, SLOT(hide()));
     // connect for show
-    connect(this, SIGNAL(showPopulation()), xSpin, SLOT(show()));
+    connect(this, SIGNAL(showConnection()), xConSpin, SLOT(show()));
     // connect for set value
-    connect(this, SIGNAL(setPopulationX(int)), xSpin, SLOT(setValue(int)));
+    connect(this, SIGNAL(setConnectionCenterX(int)), xConSpin, SLOT(setValue(int)));
 
     QLabel * yLabel = new QLabel("y");
     // connect for hide
     connect(this, SIGNAL(hideAll()), yLabel, SLOT(hide()));
     // connect for show
-    connect(this, SIGNAL(showPopulation()), yLabel, SLOT(show()));
+    connect(this, SIGNAL(showConnection()), yLabel, SLOT(show()));
     tempBox->addWidget(yLabel);
-    ySpin = new QSpinBox;
-    ySpin->setRange(-10000, 10000);
-    ySpin->setSingleStep(1);
-    ySpin->setMaximumWidth(70);
-    ySpin->setProperty("type", 1);
-    ySpin->setFocusPolicy(Qt::StrongFocus);
-    ySpin->installEventFilter(new FilterOutUndoRedoEvents);
-    tempBox->addWidget(ySpin);
+    yConSpin = new QSpinBox;
+    yConSpin->setRange(-10000, 10000);
+    yConSpin->setSingleStep(1);
+    yConSpin->setMaximumWidth(70);
+    yConSpin->setProperty("type", 1);
+    yConSpin->setFocusPolicy(Qt::StrongFocus);
+    yConSpin->installEventFilter(new FilterOutUndoRedoEvents);
+    tempBox->addWidget(yConSpin);
 
     // connect for hide
-    connect(this, SIGNAL(hideAll()), ySpin, SLOT(hide()));
+    connect(this, SIGNAL(hideAll()), yConSpin, SLOT(hide()));
     // connect for show
-    connect(this, SIGNAL(showPopulation()), ySpin, SLOT(show()));
+    connect(this, SIGNAL(showConnection()), yConSpin, SLOT(show()));
     // connect for set value
-    connect(this, SIGNAL(setPopulationY(int)), ySpin, SLOT(setValue(int)));
+    connect(this, SIGNAL(setConnectionCenterY(int)), yConSpin, SLOT(setValue(int)));
 
     QLabel * zLabel = new QLabel("z");
     // connect for hide
     connect(this, SIGNAL(hideAll()), zLabel, SLOT(hide()));
     // connect for show
-    connect(this, SIGNAL(showPopulation()), zLabel, SLOT(show()));
+    connect(this, SIGNAL(showConnection()), zLabel, SLOT(show()));
     tempBox->addWidget(zLabel);
-    zSpin = new QSpinBox;
-    zSpin->setRange(-10000, 10000);
-    zSpin->setSingleStep(1);
-    zSpin->setMaximumWidth(70);
-    zSpin->setProperty("type", 2);
-    zSpin->setFocusPolicy(Qt::StrongFocus);
-    zSpin->installEventFilter(new FilterOutUndoRedoEvents);
-    tempBox->addWidget(zSpin);
+    zConSpin = new QSpinBox;
+    zConSpin->setRange(-10000, 10000);
+    zConSpin->setSingleStep(1);
+    zConSpin->setMaximumWidth(70);
+    zConSpin->setProperty("type", 2);
+    zConSpin->setFocusPolicy(Qt::StrongFocus);
+    zConSpin->installEventFilter(new FilterOutUndoRedoEvents);
+    tempBox->addWidget(zConSpin);
 
     // connect for hide
-    connect(this, SIGNAL(hideAll()), zSpin, SLOT(hide()));
+    connect(this, SIGNAL(hideAll()), zConSpin, SLOT(hide()));
     // connect for show
-    connect(this, SIGNAL(showPopulation()), zSpin, SLOT(show()));
+    connect(this, SIGNAL(showConnection()), zConSpin, SLOT(show()));
     // connect for set value
-    connect(this, SIGNAL(setPopulationZ(int)), zSpin, SLOT(setValue(int)));
-    */
+    connect(this, SIGNAL(setConnectionCenterZ(int)), zConSpin, SLOT(setValue(int)));
+
+    // connect up
+    connect(xConSpin, SIGNAL(editingFinished()), this->data, SLOT (setCenter()));
+    connect(xConSpin, SIGNAL(editingFinished()), this->viewVZ->OpenGLWidget, SLOT (updateConnectionCenter()));
+    connect(yConSpin, SIGNAL(editingFinished()), this->data, SLOT (setCenter()));
+    connect(yConSpin, SIGNAL(editingFinished()), this->viewVZ->OpenGLWidget, SLOT (updateConnectionCenter()));
+    connect(zConSpin, SIGNAL(editingFinished()), this->data, SLOT (setCenter()));
+    connect(zConSpin, SIGNAL(editingFinished()), this->viewVZ->OpenGLWidget, SLOT (updateConnectionCenter()));
+
+    // ptrs for openGLwidget
+    xConSpin->setProperty("xconptr", qVariantFromValue((void *) xConSpin));
+    xConSpin->setProperty("yconptr", qVariantFromValue((void *) yConSpin));
+    xConSpin->setProperty("zconptr", qVariantFromValue((void *) zConSpin));
+    yConSpin->setProperty("xconptr", qVariantFromValue((void *) xConSpin));
+    yConSpin->setProperty("yconptr", qVariantFromValue((void *) yConSpin));
+    yConSpin->setProperty("zconptr", qVariantFromValue((void *) zConSpin));
+    zConSpin->setProperty("xconptr", qVariantFromValue((void *) xConSpin));
+    zConSpin->setProperty("yconptr", qVariantFromValue((void *) yConSpin));
+    zConSpin->setProperty("zconptr", qVariantFromValue((void *) zConSpin));
+
+    tempBox->addStretch();
+
+    QLabel * strengthLabel = new QLabel("<b>Strength</b>");
+    tempBox->addWidget(strengthLabel);
+    // connect for hide
+    connect(this, SIGNAL(hideAll()), strengthLabel, SLOT(hide()));
+    // connect for show
+    connect(this, SIGNAL(showConnection()), strengthLabel, SLOT(show()));
+
+    strengthSpin = new QSpinBox;
+    strengthSpin->setRange(0, 5);
+    strengthSpin->setSingleStep(1);
+    strengthSpin->setFocusPolicy(Qt::StrongFocus);
+    strengthSpin->installEventFilter(new FilterOutUndoRedoEvents);
+    tempBox->addWidget(strengthSpin);
+
+    // connect for hide
+    connect(this, SIGNAL(hideAll()), strengthSpin, SLOT(hide()));
+    // connect for show
+    connect(this, SIGNAL(showConnection()), strengthSpin, SLOT(show()));
+    // connect for set value
+    connect(this, SIGNAL(setConnectionStrength(int)), strengthSpin, SLOT(setValue(int)));
+
+    connect(strengthSpin, SIGNAL(editingFinished()), this->data, SLOT (setConnectionStrength()));
+    connect(strengthSpin, SIGNAL(valueChanged(int)), this->viewVZ->OpenGLWidget, SLOT (parsChangedProjection(int)));
+
+    tempBox->addStretch();
 
 
-    connectionComboBox = this->addDropBox(panelLayout, "Connectivity1", "will_be_overriden");
+
+
+    // STOP
+
+
+    connectionComboBox = this->addDropBox(panelLayout, "Connectivity", "will_be_overriden");
     this->updateConnectionList();
     /*connectionComboBox->addItem("All to All");
     connectionComboBox->addItem("One to One");
@@ -943,6 +973,20 @@ void viewVZLayoutEditHandler::redrawProperties() {
             QModelIndex ind = connectionComboBox->model()->index(1,0);
             connectionComboBox->model()->setData(ind, QVariant(1), Qt::UserRole-1);
         }
+
+
+        strengthSpin->disconnect(this->viewVZ->OpenGLWidget);
+        xConSpin->disconnect(this->viewVZ->OpenGLWidget);
+        yConSpin->disconnect(this->viewVZ->OpenGLWidget);
+        zConSpin->disconnect(this->viewVZ->OpenGLWidget);
+        emit setConnectionStrength(((synapse *) this->viewVZ->currObject)->strength);
+        emit setConnectionCenterX(((synapse *) this->viewVZ->currObject)->center[0]);
+        emit setConnectionCenterY(((synapse *) this->viewVZ->currObject)->center[1]);
+        emit setConnectionCenterZ(((synapse *) this->viewVZ->currObject)->center[2]);
+        //connect(strengthSpin, SIGNAL(valueChanged(int)), this->viewVZ->OpenGLWidget, SLOT (parsChangedPopulation(int)));
+        connect(xConSpin, SIGNAL(editingFinished()), this->viewVZ->OpenGLWidget, SLOT (updateConnectionCenter()));
+        connect(yConSpin, SIGNAL(editingFinished()), this->viewVZ->OpenGLWidget, SLOT (updateConnectionCenter()));
+        connect(zConSpin, SIGNAL(editingFinished()), this->viewVZ->OpenGLWidget, SLOT (updateConnectionCenter()));
 
         // set index
         connectionComboBox->disconnect(data);

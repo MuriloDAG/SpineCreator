@@ -232,6 +232,14 @@ void glConnectionWidget::redraw(int)
 
 }
 
+void glConnectionWidget::updateConnectionCenter()
+{
+    createConnectionsDL();
+
+    this->repaint();
+
+}
+
 void glConnectionWidget::allowRepaint() {
     this->repaintAllowed = true;
 }
@@ -1838,10 +1846,10 @@ void glConnectionWidget::createPopulationsDL()
                 popColours.resize(popColours.size()+1);
             }
 
-            glDeleteLists(currPop->dlIndex,1);
-            glDeleteLists(currPop->dlIndexCol,1);
+            if (currPop->dlIndex > 0) glDeleteLists(currPop->dlIndex,1);
+            if (currPop->dlIndexCol > 0) glDeleteLists(currPop->dlIndexCol,1);
 
-            /*// Start the dl to display info
+            // Start the dl to display info
             // create the index with the display lists
             currPop->dlIndex = glGenLists(1);
 
@@ -1871,7 +1879,7 @@ void glConnectionWidget::createPopulationsDL()
                 glPopMatrix();
             }
 
-            glEndList();*/
+            glEndList();
 
             //Start the dl to do collision
             // create the index with the display lists
@@ -2248,11 +2256,15 @@ void glConnectionWidget::createConnectionsDL()
 
 
                     // Draw the line between the neurons
-                    glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
-                    glBegin(GL_TRIANGLES);
+                    glBegin(GL_TRIANGLE_STRIP);
 
-                    //for (int i = 0; i <= 30; i++)
-                    //    glEvalCoord1f((GLfloat) i/30.0);
+
+                    for (int i = 0; i <= 25; i++)
+                        glEvalCoord1f((GLfloat) i/25.0);
+
+                    glEnd();
+
+                    /*glBegin(GL_TRIANGLES);
 
                     glEvalCoord1f((GLfloat) 0.0/30.0);
                     glEvalCoord1f((GLfloat) 5.0/30.0);
@@ -2293,7 +2305,7 @@ void glConnectionWidget::createConnectionsDL()
                     glEvalCoord1f((GLfloat) 30.0/30.0);
                     glEvalCoord1f((GLfloat) 25.0/30.0);
 
-                    glEnd();
+                    glEnd();*/
 
                 } else {
                     // ERR - CONNECTION INDEX OUT OF RANGE
