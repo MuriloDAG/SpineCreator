@@ -59,6 +59,10 @@ synapse::synapse(projection * proj, projectObject * data, bool dontAddInputs) {
 
     this->isVisualised = false;
 
+    this->strength = 0;
+    this->center[0] = 0;
+    this->center[1] = 0;
+    this->center[2] = 0;
 }
 
 synapse::synapse(projection * proj, rootData * data, bool dontAddInputs) {

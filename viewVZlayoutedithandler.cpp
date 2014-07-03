@@ -612,11 +612,11 @@ void viewVZLayoutEditHandler::initConnection() {
 
     // connect up
     connect(xConSpin, SIGNAL(editingFinished()), this->data, SLOT (setCenter()));
-    connect(xConSpin, SIGNAL(editingFinished()), this->viewVZ->OpenGLWidget, SLOT (updateConnectionCenter()));
+    connect(xConSpin, SIGNAL(editingFinished()), this->viewVZ->OpenGLWidget, SLOT (updateConnections()));
     connect(yConSpin, SIGNAL(editingFinished()), this->data, SLOT (setCenter()));
-    connect(yConSpin, SIGNAL(editingFinished()), this->viewVZ->OpenGLWidget, SLOT (updateConnectionCenter()));
+    connect(yConSpin, SIGNAL(editingFinished()), this->viewVZ->OpenGLWidget, SLOT (updateConnections()));
     connect(zConSpin, SIGNAL(editingFinished()), this->data, SLOT (setCenter()));
-    connect(zConSpin, SIGNAL(editingFinished()), this->viewVZ->OpenGLWidget, SLOT (updateConnectionCenter()));
+    connect(zConSpin, SIGNAL(editingFinished()), this->viewVZ->OpenGLWidget, SLOT (updateConnections()));
 
     // ptrs for openGLwidget
     xConSpin->setProperty("xconptr", qVariantFromValue((void *) xConSpin));
@@ -652,8 +652,8 @@ void viewVZLayoutEditHandler::initConnection() {
     // connect for set value
     connect(this, SIGNAL(setConnectionStrength(int)), strengthSpin, SLOT(setValue(int)));
 
-    connect(strengthSpin, SIGNAL(editingFinished()), this->data, SLOT (setConnectionStrength()));
-    connect(strengthSpin, SIGNAL(valueChanged(int)), this->viewVZ->OpenGLWidget, SLOT (parsChangedProjection(int)));
+    connect(strengthSpin, SIGNAL(editingFinished()), this->data, SLOT (setStrength()));
+    connect(strengthSpin, SIGNAL(editingFinished()), this->viewVZ->OpenGLWidget, SLOT (updateConnections()));
 
     tempBox->addStretch();
 
@@ -983,10 +983,10 @@ void viewVZLayoutEditHandler::redrawProperties() {
         emit setConnectionCenterX(((synapse *) this->viewVZ->currObject)->center[0]);
         emit setConnectionCenterY(((synapse *) this->viewVZ->currObject)->center[1]);
         emit setConnectionCenterZ(((synapse *) this->viewVZ->currObject)->center[2]);
-        //connect(strengthSpin, SIGNAL(valueChanged(int)), this->viewVZ->OpenGLWidget, SLOT (parsChangedPopulation(int)));
-        connect(xConSpin, SIGNAL(editingFinished()), this->viewVZ->OpenGLWidget, SLOT (updateConnectionCenter()));
-        connect(yConSpin, SIGNAL(editingFinished()), this->viewVZ->OpenGLWidget, SLOT (updateConnectionCenter()));
-        connect(zConSpin, SIGNAL(editingFinished()), this->viewVZ->OpenGLWidget, SLOT (updateConnectionCenter()));
+        connect(strengthSpin, SIGNAL(editingFinished()), this->viewVZ->OpenGLWidget, SLOT (updateConnections()));
+        connect(xConSpin, SIGNAL(editingFinished()), this->viewVZ->OpenGLWidget, SLOT (updateConnections()));
+        connect(yConSpin, SIGNAL(editingFinished()), this->viewVZ->OpenGLWidget, SLOT (updateConnections()));
+        connect(zConSpin, SIGNAL(editingFinished()), this->viewVZ->OpenGLWidget, SLOT (updateConnections()));
 
         // set index
         connectionComboBox->disconnect(data);

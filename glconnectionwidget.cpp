@@ -58,7 +58,6 @@ glConnectionWidget::glConnectionWidget(rootData * data, QWidget *parent) : QGLWi
     setAutoFillBackground(false);
     popIndicesShown = false;
     hoveredNeuron = 2;
-    aux_strength = 0;
     selectedIndex = -1;
     selectedType = 1;
     connGenerationMutex = new QMutex;
@@ -232,7 +231,7 @@ void glConnectionWidget::redraw(int)
 
 }
 
-void glConnectionWidget::updateConnectionCenter()
+void glConnectionWidget::updateConnections()
 {
     createConnectionsDL();
 
@@ -246,7 +245,7 @@ void glConnectionWidget::allowRepaint() {
 
 void glConnectionWidget::paintEvent(QPaintEvent * /*event*/ )
 {
-    qDebug() << "Paint event Start";
+    //qDebug() << "Paint event Start";
     double clock1 = clock();
     double clock2, clock3;
 
@@ -362,6 +361,7 @@ void glConnectionWidget::paintEvent(QPaintEvent * /*event*/ )
 
 
     // draw synapses
+    clock2 = clock();
     for (uint targNum = 0; targNum < this->selectedConns.size(); ++targNum) {
 
         // draw the connections:
@@ -431,7 +431,7 @@ void glConnectionWidget::paintEvent(QPaintEvent * /*event*/ )
             }
         }
 
-        GLfloat center[3] = {-1, 0, 3};
+
 
         if (conn->type == CSV || conn->type == Kernel || conn->type == Python) {
 
@@ -443,14 +443,21 @@ void glConnectionWidget::paintEvent(QPaintEvent * /*event*/ )
 
             connGenerationMutex->lock();
 
-            clock2 = clock();
+            int aux_strength;
+            GLfloat * center;
             if (selectedConns[targNum]->type == synapseObject) {
-                qDebug() << "Index" << ((synapse *) selectedConns[targNum])->dlIndex;
-                glCallList(((synapse *) selectedConns[targNum])->dlIndex);
-            } else {
+
+                synapse * currObj = (synapse *) selectedConns[targNum];
+                qDebug() << "Index" << currObj->dlIndex;
+                glCallList(currObj->dlIndex);
+                aux_strength = currObj->strength;
+                center = currObj->center;
+
+            }
+            else {
                 glCallList(((genericInput *) selectedConns[targNum])->dlIndex);
             }
-            clock3 = clock();
+
 
             // draw selected connections on top
             glDisable(GL_DEPTH_TEST);
@@ -739,6 +746,7 @@ void glConnectionWidget::paintEvent(QPaintEvent * /*event*/ )
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_LIGHTING);
     }
+    clock3 = clock();
 
     glDisable(GL_BLEND);
     glDisable(GL_POLYGON_SMOOTH);
@@ -826,8 +834,8 @@ void glConnectionWidget::paintEvent(QPaintEvent * /*event*/ )
     double diffticks=clock()-clock1;
     double diffms=(diffticks)/(CLOCKS_PER_SEC/1000);
 
-    qDebug() << "Paint event End, Time elapsed: " << diffms;
-    qDebug() << "Time dl: " << (clock3-clock2)/(CLOCKS_PER_SEC/1000);
+    //qDebug() << "Paint event End, Time elapsed: " << diffms;
+    //qDebug() << "Time dl: " << (clock3-clock2)/(CLOCKS_PER_SEC/1000);
 }
 
 void glConnectionWidget::drawNeuron(GLfloat r, int rings, int segments, QColor col) {
@@ -1723,17 +1731,17 @@ void glConnectionWidget::mousePressEvent(QMouseEvent *event)
     origRot.setY(origRot.y() - rot.y()*2);
 
 
-    qDebug() << "Mouse (" << event->x() << "," << event->y() << ")";
+    //qDebug() << "Mouse (" << event->x() << "," << event->y() << ")";
 
     if (button == Qt::LeftButton)
     {
-        if (aux_strength < 4)
-            aux_strength++;
-        else
-            aux_strength = 0;
+        //if (aux_strength < 4)
+        //    aux_strength++;
+       //else
+           //aux_strength = 0;
 
-        createConnectionsDL();
-        createPopulationsDL();
+        //createConnectionsDL();
+        //createPopulationsDL();
 
 
         // Read the pixel at the center of the screen.
@@ -1830,7 +1838,7 @@ void glConnectionWidget::createPopulationsDL()
             LoD = 64;
 
         for(uint locNum = 0; locNum < data->populations.size(); locNum++) {
-            qDebug() << "Population: "+data->populations[locNum]->name;
+            //qDebug() << "Population: "+data->populations[locNum]->name;
             population * currPop = data->populations[locNum];
 
             // add some neurons!
@@ -2106,13 +2114,13 @@ void glConnectionWidget::createConnectionsDL()
     qDebug() << "Start creating the display lists for connections";
 
     // work out scaling for line widths:
-    float lineScaleFactor;
-    if (imageSaveMode) {
-        float maxLen;
-        maxLen = imageSaveHeight > imageSaveWidth ? imageSaveHeight : imageSaveWidth;
-        lineScaleFactor = (1.0/1000.0*maxLen);
-    } else
-       lineScaleFactor = 1.0;
+    //float lineScaleFactor;
+    //if (imageSaveMode) {
+    //    float maxLen;
+    //    maxLen = imageSaveHeight > imageSaveWidth ? imageSaveHeight : imageSaveWidth;
+    //    lineScaleFactor = (1.0/1000.0*maxLen);
+    //} else
+    //   lineScaleFactor = 1.0;
 
 
     // draw synapses
@@ -2121,10 +2129,6 @@ void glConnectionWidget::createConnectionsDL()
         // draw the connections:
         glDisable(GL_LIGHTING);
         glEnable(GL_DEPTH_TEST);
-
-        //qDebug() << "Doing conns!";
-
-        //Synapse * currTarg = selectedConns[targNum];
 
         population * src;
         population * dst;
@@ -2185,8 +2189,6 @@ void glConnectionWidget::createConnectionsDL()
             }
         }
 
-        GLfloat center[3] = {-1, 0, 3};
-
         if (conn->type == CSV || conn->type == Kernel || conn->type == Python) {
 
             if (!src->isVisualised && !dst->isVisualised) {
@@ -2197,12 +2199,24 @@ void glConnectionWidget::createConnectionsDL()
 
             connGenerationMutex->lock();
 
+            int aux_strength = 0;
+            //If aux_strength is zero, center is not used.
+            GLfloat * center;
+
             // create the index with the display lists
             // start the display list
             if (selectedConns[targNum]->type == synapseObject) {
-                glDeleteLists(((synapse *)selectedConns[targNum])->dlIndex,1);
-                ((synapse *) selectedConns[targNum])->dlIndex = glGenLists(1);
-                glNewList(((synapse *)selectedConns[targNum])->dlIndex, GL_COMPILE);
+                synapse * currObj = (synapse *)selectedConns[targNum];
+
+                glDeleteLists(currObj->dlIndex,1);
+                currObj->dlIndex = glGenLists(1);
+                glNewList(currObj->dlIndex, GL_COMPILE);
+
+                qDebug() << "Con: " << currObj->getName() << " dlIndex: " << currObj->dlIndex;
+
+                aux_strength = currObj->strength;
+                center = currObj->center;
+
             } else {
                 glDeleteLists(((genericInput *) selectedConns[targNum])->dlIndex,1);
                 ((genericInput *) selectedConns[targNum])->dlIndex = glGenLists(1);
@@ -2212,7 +2226,7 @@ void glConnectionWidget::createConnectionsDL()
             for (uint i = 0; i < connections[targNum].size(); ++i) {
 
                 if (connections[targNum][i].src < src->layoutType->locations.size() && connections[targNum][i].dst < dst->layoutType->locations.size()) {
-                    glLineWidth(1.0*lineScaleFactor);
+                    //glLineWidth(10.0);
 
                     glColor4f(0.0, 0.0, 0.0, 0.1);
 
@@ -2220,7 +2234,7 @@ void glConnectionWidget::createConnectionsDL()
 
                     // Decide the control points
                     GLfloat ctrlpoints[aux_strength+2][3];
-                    for (int strenghtIndex = 1; i <= aux_strength; i++) {
+                    for (int strenghtIndex = 1; strenghtIndex <= aux_strength; strenghtIndex++) {
                         ctrlpoints[strenghtIndex][0] = center[0];
                         ctrlpoints[strenghtIndex][1] = center[1];
                         ctrlpoints[strenghtIndex][2] = center[2];
@@ -2256,56 +2270,13 @@ void glConnectionWidget::createConnectionsDL()
 
 
                     // Draw the line between the neurons
-                    glBegin(GL_TRIANGLE_STRIP);
+                    glBegin(GL_LINE_STRIP);
 
 
-                    for (int i = 0; i <= 25; i++)
-                        glEvalCoord1f((GLfloat) i/25.0);
-
-                    glEnd();
-
-                    /*glBegin(GL_TRIANGLES);
-
-                    glEvalCoord1f((GLfloat) 0.0/30.0);
-                    glEvalCoord1f((GLfloat) 5.0/30.0);
-                    glEvalCoord1f((GLfloat) 0.0/30.0);
+                    for (int j = 0; j <= 10; j++)
+                        glEvalCoord1f((GLfloat) j/10.0);
 
                     glEnd();
-                    glBegin(GL_TRIANGLES);
-
-                    glEvalCoord1f((GLfloat) 5.0/30.0);
-                    glEvalCoord1f((GLfloat) 10.0/30.0);
-                    glEvalCoord1f((GLfloat) 5.0/30.0);
-
-                    glEnd();
-                    glBegin(GL_TRIANGLES);
-
-                    glEvalCoord1f((GLfloat) 10.0/30.0);
-                    glEvalCoord1f((GLfloat) 15.0/30.0);
-                    glEvalCoord1f((GLfloat) 10.0/30.0);
-
-                    glEnd();
-                    glBegin(GL_TRIANGLES);
-
-                    glEvalCoord1f((GLfloat) 15.0/30.0);
-                    glEvalCoord1f((GLfloat) 20.0/30.0);
-                    glEvalCoord1f((GLfloat) 15.0/30.0);
-
-                    glEnd();
-                    glBegin(GL_TRIANGLES);
-
-                    glEvalCoord1f((GLfloat) 20.0/30.0);
-                    glEvalCoord1f((GLfloat) 25.0/30.0);
-                    glEvalCoord1f((GLfloat) 20.0/30.0);
-
-                    glEnd();
-                    glBegin(GL_TRIANGLES);
-
-                    glEvalCoord1f((GLfloat) 25.0/30.0);
-                    glEvalCoord1f((GLfloat) 30.0/30.0);
-                    glEvalCoord1f((GLfloat) 25.0/30.0);
-
-                    glEnd();*/
 
                 } else {
                     // ERR - CONNECTION INDEX OUT OF RANGE
@@ -2317,8 +2288,6 @@ void glConnectionWidget::createConnectionsDL()
             glEndList();
             connGenerationMutex->unlock();
         }
-
-        //glEndList();
     }
 
 

@@ -105,7 +105,7 @@ private:
     rootData * data;
     loc3f loc3Offset;
     systemObject * selectedObject;
-    int aux_strength;
+    //int aux_strength;
     unsigned int hoveredNeuron;
     int dlIndex;
     int selectedIndex;
@@ -136,7 +136,7 @@ signals:
 public slots:
     void redraw();
     void redraw(int);
-    void updateConnectionCenter();
+    void updateConnections();
     void selectionChanged(QItemSelection top, QItemSelection);
     void parsChangedPopulation(double);
     void parsChangedPopulation(int);
