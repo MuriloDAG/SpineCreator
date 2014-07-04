@@ -354,7 +354,7 @@ void glConnectionWidget::paintEvent(QPaintEvent * /*event*/ )
 
             //glCallList(dlPopulations+i);
             //qDebug() << data->populations[i]->dlIndex;
-            glCallList(data->populations[i]->dlIndexCol);
+            glCallList(data->populations[i]->dlIndex);
             glPopMatrix();
         }
     }
@@ -1186,6 +1186,8 @@ void glConnectionWidget::parsChangedPopulation(int value) {
         }
     }
 
+    createPopulationsDL();
+
     // redraw
     this->repaint();
 
@@ -1207,6 +1209,9 @@ void glConnectionWidget::parsChangedPopulation(double) {
             }
         }
     }
+
+    createPopulationsDL();
+
     // redraw
     this->repaint();
 
@@ -1229,6 +1234,8 @@ void glConnectionWidget::parsChangedPopulation() {
             }
         }
     }
+
+    createPopulationsDL();
 
     // redraw
     this->repaint();
@@ -1735,23 +1742,39 @@ void glConnectionWidget::mousePressEvent(QMouseEvent *event)
 
     if (button == Qt::LeftButton)
     {
-        //if (aux_strength < 4)
-        //    aux_strength++;
-       //else
-           //aux_strength = 0;
+        glDisable(GL_LIGHTING);
 
-        //createConnectionsDL();
-        //createPopulationsDL();
+        glPushMatrix();
+        glLoadIdentity();
+        glTranslatef(0,0,-5.0);
+        for (uint i = 0; i < data->populations.size(); i++) {
+            if (data->populations[i]->isVisualised) {
+                glPushMatrix();
+                // if currently selected
+                if (data->populations[i] == selectedObject) {
+                    // move to pop location denoted by the spinboxes for x, y, z
+                    glTranslatef(loc3Offset.x, loc3Offset.y,loc3Offset.z);
+                } else {
+                    glTranslatef(data->populations[i]->loc3.x, data->populations[i]->loc3.y,data->populations[i]->loc3.z);
+                }
+
+                glCallList(data->populations[i]->dlIndexCol);
+                glPopMatrix();
+            }
+        }
+        glPopMatrix();
 
 
         // Read the pixel at the center of the screen.
         // You can also use glfwGetMousePos().
         // Ultra-mega-over slow too, even for 1 pixel,
         // because the framebuffer is on the GPU.
-        //unsigned char data[4];
-        //glReadPixels(event->x(), event->y(),1,1, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        unsigned char data[3];
+        GLint viewport[4];
+        glGetIntegerv(GL_VIEWPORT, viewport);
+        glReadPixels(event->x(), this->height() - event->y(),1,1, GL_RGB, GL_UNSIGNED_BYTE, data);
 
-        //qDebug() << "1: " << data[0] << ",2: " << data[1] << ",3: " << data[2] << ",4: " << data[3];
+        qDebug() << "1: " << data[0] << ",2: " << data[1] << ",3: " << data[2];
 
     }
 
@@ -1927,7 +1950,9 @@ void glConnectionWidget::createPopulationsDL()
     }
 }
 
-/*void glConnectionWidget::createConnectionsDL()
+
+
+void glConnectionWidget::createConnectionsDL()
 {
     qDebug() << "Start creating the display lists for connections";
 
@@ -1938,189 +1963,7 @@ void glConnectionWidget::createPopulationsDL()
         maxLen = imageSaveHeight > imageSaveWidth ? imageSaveHeight : imageSaveWidth;
         lineScaleFactor = (1.0/1000.0*maxLen);
     } else
-        lineScaleFactor = 1.0;
-
-    if (data)
-    {
-        for(uint locNum = 0; locNum < data->populations.size(); locNum++)
-        {
-
-            population * currPop = data->populations[locNum];
-            qDebug() << "Population: "+currPop->name;
-
-            for(uint conNum = 0; conNum < currPop->projections.size(); conNum++)
-            {
-                projection * currPro = currPop->projections[conNum];
-                qDebug() << "Src: " << currPro->source->name << " , dst: " << currPro->destination->name;
-
-                for(uint conSyn = 0; conSyn < currPro->synapses.size(); conSyn++)
-                {
-                    qDebug() << "Syn index: " << conSyn;
-
-                    population * src;
-                    population * dst;
-                    connection * conn;
-
-                    // Generic input was removed
-                    synapse * currTarg = (synapse *) currPro->synapses[conSyn];
-                    conn = currTarg->connectionType;
-                    src = currTarg->proj->source;
-                    dst = currTarg->proj->destination;
-
-                    // create the index with the display lists
-                    currTarg->dlIndex = glGenLists(1);
-
-                    float srcX;
-                    float srcY;
-                    float srcZ;
-
-                    // big offsets for src
-                    if (src == selectedObject) {
-                        srcX = this->loc3Offset.x;
-                        srcY = this->loc3Offset.y;
-                        srcZ = this->loc3Offset.z;
-                    } else {
-                        srcX = src->loc3.x;
-                        srcY = src->loc3.y;
-                        srcZ = src->loc3.z;
-                    }
-
-                    float dstX;
-                    float dstY;
-                    float dstZ;
-
-                    // big offsets for dst
-                    if (dst == selectedObject) {
-                        dstX = this->loc3Offset.x;
-                        dstY = this->loc3Offset.y;
-                        dstZ = this->loc3Offset.z;
-                    } else {
-                        dstX = dst->loc3.x;
-                        dstY = dst->loc3.y;
-                        dstZ = dst->loc3.z;
-                    }
-
-                    // check we have the current version of the connectivity
-                    if (conn->type == CSV) {
-                        csv_connection * csv_conn = (csv_connection *) conn;
-                        if (csv_conn->generator) {
-                            if (((pythonscript_connection *) csv_conn->generator)->changed()) {
-                                ((pythonscript_connection *) csv_conn->generator)->regenerateConnections();
-                                // fetch connections back here:
-                                connections[conSyn].clear();
-                                csv_conn->getAllData(connections[conSyn]);
-                            }
-                        }
-                    }
-
-                    GLfloat center[3] = {-1, 0, 3};
-
-                    if (conn->type == CSV || conn->type == Kernel || conn->type == Python) {
-
-                        if (!src->isVisualised && !dst->isVisualised) {
-                            glEnable(GL_DEPTH_TEST);
-                            glEnable(GL_LIGHTING);
-                            continue;
-                        }
-
-                        connGenerationMutex->lock();
-
-                        // start the display list
-                        glNewList(currPop->dlIndex, GL_COMPILE);
-
-
-                        for (uint i = 0; i < connections[conSyn].size(); ++i) {
-
-                            if (connections[conSyn][i].src < src->layoutType->locations.size() && connections[conSyn][i].dst < dst->layoutType->locations.size()) {
-                                glLineWidth(1.0*lineScaleFactor);
-
-                                glColor4f(0.0, 0.0, 0.0, 0.1);
-
-                                // draw in
-
-                                // Decide the control points
-                                GLfloat ctrlpoints[aux_strength+2][3];
-                                for (int strenghtIndex = 1; i <= aux_strength; i++) {
-                                    ctrlpoints[strenghtIndex][0] = center[0];
-                                    ctrlpoints[strenghtIndex][1] = center[1];
-                                    ctrlpoints[strenghtIndex][2] = center[2];
-                                }
-
-                                if (src->isVisualised && dst->isVisualised) {
-                                    ctrlpoints[0][0] = src->layoutType->locations[connections[targNum][i].src].x+srcX;
-                                    ctrlpoints[0][1] = src->layoutType->locations[connections[targNum][i].src].y+srcY;
-                                    ctrlpoints[0][2] = src->layoutType->locations[connections[targNum][i].src].z+srcZ;
-                                    ctrlpoints[aux_strength+1][0] = dst->layoutType->locations[connections[targNum][i].dst].x+dstX;
-                                    ctrlpoints[aux_strength+1][1] = dst->layoutType->locations[connections[targNum][i].dst].y+dstY;
-                                    ctrlpoints[aux_strength+1][2] = dst->layoutType->locations[connections[targNum][i].dst].z+dstZ;
-                                }
-                                if (src->isVisualised && !dst->isVisualised) {
-                                    ctrlpoints[0][0] = src->layoutType->locations[connections[targNum][i].src].x;
-                                    ctrlpoints[0][1] = src->layoutType->locations[connections[targNum][i].src].y;
-                                    ctrlpoints[0][2] = src->layoutType->locations[connections[targNum][i].src].z;
-                                    ctrlpoints[aux_strength+1][0] = dstX;
-                                    ctrlpoints[aux_strength+1][1] = dstY;
-                                    ctrlpoints[aux_strength+1][2] = dstZ;
-                                }
-                                if (!src->isVisualised && dst->isVisualised) {
-                                    ctrlpoints[0][0] = src->loc3.x;
-                                    ctrlpoints[0][1] = src->loc3.y;
-                                    ctrlpoints[0][2] = src->loc3.z;
-                                    ctrlpoints[aux_strength+1][0] = dst->layoutType->locations[connections[targNum][i].dst].x;
-                                    ctrlpoints[aux_strength+1][1] = dst->layoutType->locations[connections[targNum][i].dst].y;
-                                    ctrlpoints[aux_strength+1][2] = dst->layoutType->locations[connections[targNum][i].dst].z;
-                                }
-
-
-                                glMap1f(GL_MAP1_VERTEX_3, 0.0, 1.0, 3, aux_strength+2, &ctrlpoints[0][0]);
-                                glEnable(GL_MAP1_VERTEX_3);
-
-                                // Draw the line between the neurons
-                                glBegin(GL_LINE_STRIP);
-
-                                for (int i = 0; i <= 30; i++)
-                                    glEvalCoord1f((GLfloat) i/30.0);
-
-                                glEnd();
-
-                            } else {
-                                // ERR - CONNECTION INDEX OUT OF RANGE
-                            }
-
-                        }
-                        glEndList();
-
-                        connGenerationMutex->unlock();
-
-                    }
-
-
-
-
-
-
-                }
-            }
-
-        }
-    }
-
-    qDebug() << "Finish creating the display lists for connections";
-}*/
-
-
-void glConnectionWidget::createConnectionsDL()
-{
-    qDebug() << "Start creating the display lists for connections";
-
-    // work out scaling for line widths:
-    //float lineScaleFactor;
-    //if (imageSaveMode) {
-    //    float maxLen;
-    //    maxLen = imageSaveHeight > imageSaveWidth ? imageSaveHeight : imageSaveWidth;
-    //    lineScaleFactor = (1.0/1000.0*maxLen);
-    //} else
-    //   lineScaleFactor = 1.0;
+       lineScaleFactor = 1.0;
 
 
     // draw synapses
@@ -2226,7 +2069,7 @@ void glConnectionWidget::createConnectionsDL()
             for (uint i = 0; i < connections[targNum].size(); ++i) {
 
                 if (connections[targNum][i].src < src->layoutType->locations.size() && connections[targNum][i].dst < dst->layoutType->locations.size()) {
-                    //glLineWidth(10.0);
+                    glLineWidth(1.0 * lineScaleFactor);
 
                     glColor4f(0.0, 0.0, 0.0, 0.1);
 
