@@ -211,6 +211,9 @@ void glConnectionWidget::redraw() {
             currPop->layoutType->generateLayout(currPop->numNeurons,&currPop->layoutType->locations,errs);
         }
     }
+
+    createPopulationsDL();
+
     this->repaint();
 }
 
@@ -226,6 +229,8 @@ void glConnectionWidget::redraw(int)
     loc3Offset.x = xSpin->value();
     loc3Offset.y = ySpin->value();
     loc3Offset.z = zSpin->value();
+
+    createPopulationsDL();
 
     this->repaint();
 
@@ -834,8 +839,8 @@ void glConnectionWidget::paintEvent(QPaintEvent * /*event*/ )
     double diffticks=clock()-clock1;
     double diffms=(diffticks)/(CLOCKS_PER_SEC/1000);
 
-    //qDebug() << "Paint event End, Time elapsed: " << diffms;
-    //qDebug() << "Time dl: " << (clock3-clock2)/(CLOCKS_PER_SEC/1000);
+    qDebug() << "Paint event End, Time elapsed: " << diffms;
+    qDebug() << "Time dl: " << (clock3-clock2)/(CLOCKS_PER_SEC/1000);
 }
 
 void glConnectionWidget::drawNeuron(GLfloat r, int rings, int segments, QColor col) {
@@ -1157,8 +1162,6 @@ void glConnectionWidget::typeChanged(int) {
 
 
     }
-
-
 
     // redraw
     this->repaint();
