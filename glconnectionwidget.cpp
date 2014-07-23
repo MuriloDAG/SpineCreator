@@ -512,7 +512,7 @@ void glConnectionWidget::paintEvent(QPaintEvent * /*event*/ )
 
                             // Decide the control points
                             GLfloat ctrlpoints[aux_strength+2][3];
-                            for (int strenghtIndex = 1; i <= aux_strength; i++) {
+                            for (int strenghtIndex = 1; strenghtIndex <= aux_strength; strenghtIndex++) {
                                 ctrlpoints[strenghtIndex][0] = center[0];
                                 ctrlpoints[strenghtIndex][1] = center[1];
                                 ctrlpoints[strenghtIndex][2] = center[2];
@@ -550,8 +550,8 @@ void glConnectionWidget::paintEvent(QPaintEvent * /*event*/ )
                             // Draw the line between the neurons
                             glBegin(GL_LINE_STRIP);
 
-                            for (int i = 0; i <= 30; i++)
-                                glEvalCoord1f((GLfloat) i/30.0);
+                            for (int i = 0; i <= 10; i++)
+                                glEvalCoord1f((GLfloat) i/10.0);
 
                             glEnd();
                         }
@@ -1466,8 +1466,10 @@ void glConnectionWidget::refreshAll() {
 
     }
 
-}
 
+    createPopulationsDL();
+    createConnectionsDL();
+}
 
 void glConnectionWidget::setConnType(connectionType cType) {
 
