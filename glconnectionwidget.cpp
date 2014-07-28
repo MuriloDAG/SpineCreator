@@ -283,7 +283,7 @@ void glConnectionWidget::paintEvent(QPaintEvent * /*event*/ )
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_POLYGON_SMOOTH);
-    glEnable(GL_LINE_SMOOTH);
+    //glEnable(GL_LINE_SMOOTH);
 
     glEnable(GL_DEPTH_TEST);
     glShadeModel(GL_SMOOTH);
@@ -357,8 +357,6 @@ void glConnectionWidget::paintEvent(QPaintEvent * /*event*/ )
                 glTranslatef(data->populations[i]->loc3.x, data->populations[i]->loc3.y,data->populations[i]->loc3.z);
             }
 
-            //glCallList(dlPopulations+i);
-            //qDebug() << data->populations[i]->dlIndex;
             glCallList(data->populations[i]->dlIndex);
             glPopMatrix();
         }
@@ -467,7 +465,7 @@ void glConnectionWidget::paintEvent(QPaintEvent * /*event*/ )
             // draw selected connections on top
             glDisable(GL_DEPTH_TEST);
             if (selectedConns[targNum] == selectedObject) {
-                for (uint i = 0; i < connections[targNum].size(); ++i) {
+                for (uint i = 0; i < connections[targNum].size(); i) {
 
                     if (connections[targNum][i].src < src->layoutType->locations.size() && connections[targNum][i].dst < dst->layoutType->locations.size()) {
                         glLineWidth(1.0*lineScaleFactor);
@@ -550,8 +548,8 @@ void glConnectionWidget::paintEvent(QPaintEvent * /*event*/ )
                             // Draw the line between the neurons
                             glBegin(GL_LINE_STRIP);
 
-                            for (int i = 0; i <= 10; i++)
-                                glEvalCoord1f((GLfloat) i/10.0);
+                            for (int i = 0; i <= 30; i++)
+                                glEvalCoord1f((GLfloat) i/30.0);
 
                             glEnd();
                         }
@@ -2121,8 +2119,8 @@ void glConnectionWidget::createConnectionsDL()
                     glBegin(GL_LINE_STRIP);
 
 
-                    for (int j = 0; j <= 10; j++)
-                        glEvalCoord1f((GLfloat) j/10.0);
+                    for (int j = 0; j <= 30; j++)
+                        glEvalCoord1f((GLfloat) j/30.0);
 
                     glEnd();
 
