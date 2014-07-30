@@ -57,7 +57,8 @@ glConnectionWidget::glConnectionWidget(rootData * data, QWidget *parent) : QGLWi
     selectedObject = NULL;
     setAutoFillBackground(false);
     popIndicesShown = false;
-    hoveredNeuron = 2;
+    clickedPopulation = -1;
+    clickedNeuron = -1;
     selectedIndex = -1;
     selectedType = 1;
     connGenerationMutex = new QMutex;
@@ -830,6 +831,85 @@ void glConnectionWidget::paintEvent(QPaintEvent * /*event*/ )
     } else {
         // if the painter isn't there this doesn't get called!
         swapBuffers();
+    }
+
+    // Make sure the clicked population exists and is visible
+    if (0 <= clickedPopulation &&  clickedPopulation <= data->populations.size())
+    {
+        if (data->populations[clickedPopulation]->isVisualised)
+        {
+            population * currPop = data->populations[clickedPopulation];
+
+            if (0 <= clickedNeuron && clickedNeuron <= currPop->layoutType->locations.size())
+            {
+                qDebug() << "Population: " << clickedPopulation << ", Neuron: " << clickedNeuron;
+
+                QPainter painter(this);
+                painter.setRenderHint(QPainter::Antialiasing);
+
+                QPen pen = painter.pen();
+                QPen oldPen = pen;
+                pen.setColor(QColor(0,0,0,255));
+                painter.setPen(pen);
+
+                float zoomVal = zoomFactor;
+                if (zoomVal < 0.3)
+                    zoomVal = 0.3;
+
+                // draw text
+
+                glPushMatrix();
+
+                glTranslatef(currPop->layoutType->locations[clickedNeuron].x, currPop->layoutType->locations[clickedNeuron].y, currPop->layoutType->locations[clickedNeuron].z);
+
+                // if currently selected
+                if (currPop == selectedObject) {
+                    // move to pop location denoted by the spinboxes for x, y, z
+                    glTranslatef(loc3Offset.x, loc3Offset.y,loc3Offset.z);
+                } else {
+                    glTranslatef(currPop->loc3.x, currPop->loc3.y,currPop->loc3.z);
+                }
+
+                // print up text:
+                GLdouble modelviewMatrix[16];
+                GLdouble projectionMatrix[16];
+                GLint viewPort[4];
+                GLdouble winX;
+                GLdouble winY;
+                GLdouble winZ;
+                glGetIntegerv(GL_VIEWPORT, viewPort);
+                glGetDoublev(GL_MODELVIEW_MATRIX, modelviewMatrix);
+                glGetDoublev(GL_PROJECTION_MATRIX, projectionMatrix);
+                gluProject(0, 0, 0, modelviewMatrix, projectionMatrix, viewPort, &winX, &winY, &winZ);
+
+                winX /= RETINA_SUPPORT;
+                winY /= RETINA_SUPPORT;
+
+                if (orthoView) {
+                    winX += this->width()/4.0;
+                    winY -= this->height()/4.0;
+                }
+
+                if (imageSaveMode) {}
+                    //painter.drawText(QRect(winX-(1.0-winZ)*220-20,imageSaveHeight-winY-(1.0-winZ)*220-10,40,20),QString::number(float(i)));
+                else
+                    if (orthoView)
+                        painter.drawText(QRect(winX-(1.0-winZ)*220-10.0/zoomVal-10,this->height()-winY-(1.0-winZ)*220-10.0/zoomVal-10,40,20),QString::number(float(clickedNeuron)));
+                    else {
+                        QRect textRect = QRect(winX-(1.0-winZ)*300-10.0/zoomVal,this->height()-winY-(1.0-winZ)*300-10.0/zoomVal,40,20);
+                        painter.setBrush(Qt::NoBrush);
+                        painter.drawRoundRect(textRect);
+                        painter.drawText(textRect,QString::number(float(clickedNeuron)));
+                    }
+                    //painter.drawText(QRect(winX-(1.0-winZ)*600,this->height()-winY-(1.0-winZ)*600,40,20),QString::number(float(i)));
+                    //painter.drawText(QRect((winX-(1.0-winZ)*220-20),this->height()-(winY-(1.0-winZ)*220+50),40,20),QString::number(float(i)));
+
+                glPopMatrix();
+
+                painter.setPen(oldPen);
+                painter.end();
+            }
+        }
     }
 
     glPopMatrix();
@@ -1743,6 +1823,7 @@ void glConnectionWidget::mousePressEvent(QMouseEvent *event)
 
     //qDebug() << "Mouse (" << event->x() << "," << event->y() << ")";
 
+    // Alg that detectes clicked object
     if (button == Qt::LeftButton)
     {
         glDisable(GL_LIGHTING);
@@ -1772,12 +1853,43 @@ void glConnectionWidget::mousePressEvent(QMouseEvent *event)
         // You can also use glfwGetMousePos().
         // Ultra-mega-over slow too, even for 1 pixel,
         // because the framebuffer is on the GPU.
-        unsigned char data[3];
+        unsigned char detectedColor[3];
         GLint viewport[4];
         glGetIntegerv(GL_VIEWPORT, viewport);
-        glReadPixels(event->x(), this->height() - event->y(),1,1, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glReadPixels(event->x(), this->height() - event->y(),1,1, GL_RGB, GL_UNSIGNED_BYTE, detectedColor);
 
-        qDebug() << "1: " << data[0] << ",2: " << data[1] << ",3: " << data[2];
+        //qDebug() << "Population: " << detectedColor[0] << ", Neuron: " << ((detectedColor[2] << 8) + detectedColor[1]);
+
+        // Make sure the population exists and is visible
+        if (0 <= detectedColor[0] &&  detectedColor[0] <= data->populations.size()) {
+            if (data->populations[detectedColor[0]]->isVisualised)
+            {
+                int selectedNeuron = (detectedColor[2] << 8) + detectedColor[1];
+                qDebug() << "Population: " << detectedColor[0] << ", Neuron: " << selectedNeuron;
+
+                population * currPop = data->populations[detectedColor[0]];
+
+                if (0 <= selectedNeuron && selectedNeuron <= currPop->layoutType->locations.size())
+                {
+                    clickedPopulation = detectedColor[0];
+                    clickedNeuron = selectedNeuron;
+                    this->repaint();
+                }
+                else
+                {
+                    clickedNeuron = -1;
+                }
+            }
+            else
+            {
+                clickedPopulation = -1;
+            }
+        }
+        else
+        {
+            clickedPopulation = -1;
+        }
+
 
     }
 
