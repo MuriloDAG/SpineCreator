@@ -831,86 +831,97 @@ void glConnectionWidget::paintEvent(QPaintEvent * /*event*/ )
     } else {
         // if the painter isn't there this doesn't get called!
         swapBuffers();
-    }
 
-    // Make sure the clicked population exists and is visible
-    if (0 <= clickedPopulation &&  clickedPopulation <= data->populations.size())
-    {
-        if (data->populations[clickedPopulation]->isVisualised)
+        // Make sure the clicked population exists and is visible
+        if (0 <= clickedPopulation &&  clickedPopulation <= data->populations.size())
         {
-            population * currPop = data->populations[clickedPopulation];
-
-            if (0 <= clickedNeuron && clickedNeuron <= currPop->layoutType->locations.size())
+            if (data->populations[clickedPopulation]->isVisualised)
             {
-                qDebug() << "Population: " << clickedPopulation << ", Neuron: " << clickedNeuron;
+                population * currPop = data->populations[clickedPopulation];
 
-                QPainter painter(this);
-                painter.setRenderHint(QPainter::Antialiasing);
+                if (0 <= clickedNeuron && clickedNeuron <= currPop->layoutType->locations.size())
+                {
+                    qDebug() << "Population: " << clickedPopulation << ", Neuron: " << clickedNeuron;
 
-                QPen pen = painter.pen();
-                QPen oldPen = pen;
-                pen.setColor(QColor(0,0,0,255));
-                painter.setPen(pen);
+                    QPainter painter(this);
+                    painter.setRenderHint(QPainter::Antialiasing);
 
-                float zoomVal = zoomFactor;
-                if (zoomVal < 0.3)
-                    zoomVal = 0.3;
+                    QPen pen = painter.pen();
+                    QPen oldPen = pen;
+                    pen.setColor(QColor(0,0,0,255));
+                    painter.setPen(pen);
 
-                // draw text
+                    float zoomVal = zoomFactor;
+                    if (zoomVal < 0.3)
+                        zoomVal = 0.3;
 
-                glPushMatrix();
+                    // draw text
 
-                glTranslatef(currPop->layoutType->locations[clickedNeuron].x, currPop->layoutType->locations[clickedNeuron].y, currPop->layoutType->locations[clickedNeuron].z);
+                    glPushMatrix();
 
-                // if currently selected
-                if (currPop == selectedObject) {
-                    // move to pop location denoted by the spinboxes for x, y, z
-                    glTranslatef(loc3Offset.x, loc3Offset.y,loc3Offset.z);
-                } else {
-                    glTranslatef(currPop->loc3.x, currPop->loc3.y,currPop->loc3.z);
-                }
+                    glTranslatef(currPop->layoutType->locations[clickedNeuron].x, currPop->layoutType->locations[clickedNeuron].y, currPop->layoutType->locations[clickedNeuron].z);
 
-                // print up text:
-                GLdouble modelviewMatrix[16];
-                GLdouble projectionMatrix[16];
-                GLint viewPort[4];
-                GLdouble winX;
-                GLdouble winY;
-                GLdouble winZ;
-                glGetIntegerv(GL_VIEWPORT, viewPort);
-                glGetDoublev(GL_MODELVIEW_MATRIX, modelviewMatrix);
-                glGetDoublev(GL_PROJECTION_MATRIX, projectionMatrix);
-                gluProject(0, 0, 0, modelviewMatrix, projectionMatrix, viewPort, &winX, &winY, &winZ);
-
-                winX /= RETINA_SUPPORT;
-                winY /= RETINA_SUPPORT;
-
-                if (orthoView) {
-                    winX += this->width()/4.0;
-                    winY -= this->height()/4.0;
-                }
-
-                if (imageSaveMode) {}
-                    //painter.drawText(QRect(winX-(1.0-winZ)*220-20,imageSaveHeight-winY-(1.0-winZ)*220-10,40,20),QString::number(float(i)));
-                else
-                    if (orthoView)
-                        painter.drawText(QRect(winX-(1.0-winZ)*220-10.0/zoomVal-10,this->height()-winY-(1.0-winZ)*220-10.0/zoomVal-10,40,20),QString::number(float(clickedNeuron)));
-                    else {
-                        QRect textRect = QRect(winX-(1.0-winZ)*300-10.0/zoomVal,this->height()-winY-(1.0-winZ)*300-10.0/zoomVal,40,20);
-                        painter.setBrush(Qt::NoBrush);
-                        painter.drawRoundRect(textRect);
-                        painter.drawText(textRect,QString::number(float(clickedNeuron)));
+                    // if currently selected
+                    if (currPop == selectedObject) {
+                        // move to pop location denoted by the spinboxes for x, y, z
+                        glTranslatef(loc3Offset.x, loc3Offset.y,loc3Offset.z);
+                    } else {
+                        glTranslatef(currPop->loc3.x, currPop->loc3.y,currPop->loc3.z);
                     }
-                    //painter.drawText(QRect(winX-(1.0-winZ)*600,this->height()-winY-(1.0-winZ)*600,40,20),QString::number(float(i)));
-                    //painter.drawText(QRect((winX-(1.0-winZ)*220-20),this->height()-(winY-(1.0-winZ)*220+50),40,20),QString::number(float(i)));
 
-                glPopMatrix();
+                    // print up text:
+                    GLdouble modelviewMatrix[16];
+                    GLdouble projectionMatrix[16];
+                    GLint viewPort[4];
+                    GLdouble winX;
+                    GLdouble winY;
+                    GLdouble winZ;
+                    glGetIntegerv(GL_VIEWPORT, viewPort);
+                    glGetDoublev(GL_MODELVIEW_MATRIX, modelviewMatrix);
+                    glGetDoublev(GL_PROJECTION_MATRIX, projectionMatrix);
+                    gluProject(0, 0, 0, modelviewMatrix, projectionMatrix, viewPort, &winX, &winY, &winZ);
 
-                painter.setPen(oldPen);
-                painter.end();
+                    winX /= RETINA_SUPPORT;
+                    winY /= RETINA_SUPPORT;
+
+                    if (orthoView) {
+                        winX += this->width()/4.0;
+                        winY -= this->height()/4.0;
+                    }
+
+
+                    QString neuronInfo = "";
+                    neuronInfo += "Population: " + currPop->getName();
+                    neuronInfo += "\n";
+                    neuronInfo += "Neuron: " + QString::number(float(clickedNeuron));
+                    QRect textRect;
+
+                    if (imageSaveMode) {}
+                        //painter.drawText(QRect(winX-(1.0-winZ)*220-20,imageSaveHeight-winY-(1.0-winZ)*220-10,40,20),QString::number(float(i)));
+                    else {
+                        if (orthoView)
+                            textRect = QRect(winX-(1.0-winZ)*220-10.0/zoomVal-10,this->height()-winY-(1.0-winZ)*220-10.0/zoomVal-10,80,30);
+                        else
+                            textRect = QRect(winX-(1.0-winZ)*300-10.0/zoomVal,this->height()-winY-(1.0-winZ)*300-10.0/zoomVal,80,30);
+
+                        painter.drawText(textRect, Qt::TextDontClip, neuronInfo);
+                        painter.setBrush(Qt::NoBrush);
+                        QFont myFont;
+                        QFontMetrics fm(myFont);
+                        painter.drawRect(fm.boundingRect(textRect, Qt::TextDontClip, neuronInfo));
+                    }
+                        //painter.drawText(QRect(winX-(1.0-winZ)*600,this->height()-winY-(1.0-winZ)*600,40,20),QString::number(float(i)));
+                        //painter.drawText(QRect((winX-(1.0-winZ)*220-20),this->height()-(winY-(1.0-winZ)*220+50),40,20),QString::number(float(i)));
+
+                    glPopMatrix();
+
+                    painter.setPen(oldPen);
+                    painter.end();
+                }
             }
         }
     }
+
 
     glPopMatrix();
 
@@ -2064,8 +2075,6 @@ void glConnectionWidget::createPopulationsDL()
         qDebug() << "Finish creating the display lists";
     }
 }
-
-
 
 void glConnectionWidget::createConnectionsDL()
 {
