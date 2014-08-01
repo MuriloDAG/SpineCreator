@@ -456,17 +456,20 @@ void glConnectionWidget::paintEvent(QPaintEvent * /*event*/ )
                 glCallList(currObj->dlIndex);
                 aux_strength = currObj->strength;
                 center = currObj->center;
+                qDebug() << "Finished calling dl list";
 
             }
             else {
                 glCallList(((genericInput *) selectedConns[targNum])->dlIndex);
             }
 
+            qDebug() << "Test";
 
             // draw selected connections on top
             glDisable(GL_DEPTH_TEST);
             if (selectedConns[targNum] == selectedObject) {
-                for (uint i = 0; i < connections[targNum].size(); i) {
+
+                for (uint i = 0; i < connections[targNum].size(); i++) {
 
                     if (connections[targNum][i].src < src->layoutType->locations.size() && connections[targNum][i].dst < dst->layoutType->locations.size()) {
                         glLineWidth(1.0*lineScaleFactor);
@@ -549,8 +552,8 @@ void glConnectionWidget::paintEvent(QPaintEvent * /*event*/ )
                             // Draw the line between the neurons
                             glBegin(GL_LINE_STRIP);
 
-                            for (int i = 0; i <= 30; i++)
-                                glEvalCoord1f((GLfloat) i/30.0);
+                            for (int k = 0; k <= 30; k++)
+                                glEvalCoord1f((GLfloat) k/30.0);
 
                             glEnd();
                         }
@@ -563,6 +566,8 @@ void glConnectionWidget::paintEvent(QPaintEvent * /*event*/ )
             connGenerationMutex->unlock();
 
         }
+
+
 
         if (conn->type == OnetoOne) {
 
