@@ -82,7 +82,7 @@ void glConnectionWidget::initializeGL()
 {
 
     createPopulationsDL();
-    //createConnectionsDL();
+    createConnectionsDL();
 
     glEnable(GL_MULTISAMPLE);
     glEnable(GL_MAP1_VERTEX_3);
@@ -214,6 +214,7 @@ void glConnectionWidget::redraw() {
     }
 
     createPopulationsDL();
+    createConnectionsDL();
 
     this->repaint();
 }
@@ -232,6 +233,7 @@ void glConnectionWidget::redraw(int)
     loc3Offset.z = zSpin->value();
 
     createPopulationsDL();
+    createConnectionsDL();
 
     this->repaint();
 
@@ -1283,6 +1285,7 @@ void glConnectionWidget::parsChangedPopulation(int value) {
     }
 
     createPopulationsDL();
+    createConnectionsDL();
 
     // redraw
     this->repaint();
@@ -1307,6 +1310,7 @@ void glConnectionWidget::parsChangedPopulation(double) {
     }
 
     createPopulationsDL();
+    createConnectionsDL();
 
     // redraw
     this->repaint();
@@ -1332,6 +1336,7 @@ void glConnectionWidget::parsChangedPopulation() {
     }
 
     createPopulationsDL();
+    createConnectionsDL();
 
     // redraw
     this->repaint();
@@ -1866,13 +1871,10 @@ void glConnectionWidget::mousePressEvent(QMouseEvent *event)
         }
         glPopMatrix();
 
-
-        // Read the pixel at the center of the screen.
-        // You can also use glfwGetMousePos().
-        // Ultra-mega-over slow too, even for 1 pixel,
-        // because the framebuffer is on the GPU.
+        // Color picking to detect seleceted neuron
         unsigned char detectedColor[3];
         GLint viewport[4];
+        // The the pixel from the GPU
         glGetIntegerv(GL_VIEWPORT, viewport);
         glReadPixels(event->x(), this->height() - event->y(),1,1, GL_RGB, GL_UNSIGNED_BYTE, detectedColor);
 
