@@ -39,6 +39,11 @@ genericInput::genericInput()
     isVisualised = false;
     source = NULL;
     destination = NULL;
+
+    this->strength = 0;
+    this->center[0] = 0;
+    this->center[1] = 0;
+    this->center[2] = 0;
 }
 
 genericInput::genericInput(NineMLComponentData * src, NineMLComponentData * dst, bool projInput) {
@@ -75,6 +80,11 @@ genericInput::genericInput(NineMLComponentData * src, NineMLComponentData * dst,
     dst->matchPorts();
 
     isVisualised = false;
+
+    this->strength = 0;
+    this->center[0] = 0;
+    this->center[1] = 0;
+    this->center[2] = 0;
 }
 
 void genericInput::connect() {
@@ -121,7 +131,6 @@ void genericInput::disconnect() {
     }
 
 }
-
 
 genericInput::~genericInput()
 {

@@ -82,7 +82,7 @@ void glConnectionWidget::initializeGL()
 {
 
     createPopulationsDL();
-    createConnectionsDL();
+    //createConnectionsDL();
 
     glEnable(GL_MULTISAMPLE);
     glEnable(GL_MAP1_VERTEX_3);
@@ -452,24 +452,22 @@ void glConnectionWidget::paintEvent(QPaintEvent * /*event*/ )
             if (selectedConns[targNum]->type == synapseObject) {
 
                 synapse * currObj = (synapse *) selectedConns[targNum];
-                qDebug() << "Index" << currObj->dlIndex;
                 glCallList(currObj->dlIndex);
                 aux_strength = currObj->strength;
                 center = currObj->center;
-                qDebug() << "Finished calling dl list";
-
             }
             else {
-                glCallList(((genericInput *) selectedConns[targNum])->dlIndex);
+                genericInput * currObj = (genericInput *) selectedConns[targNum];
+                glCallList(currObj->dlIndex);
+                aux_strength = currObj->strength;
+                center = currObj->center;
             }
-
-            qDebug() << "Test";
 
             // draw selected connections on top
             glDisable(GL_DEPTH_TEST);
             if (selectedConns[targNum] == selectedObject) {
 
-                for (uint i = 0; i < connections[targNum].size(); i++) {
+                for (uint i = 0; i < connections[targNum].size(); ++i) {
 
                     if (connections[targNum][i].src < src->layoutType->locations.size() && connections[targNum][i].dst < dst->layoutType->locations.size()) {
                         glLineWidth(1.0*lineScaleFactor);
@@ -846,8 +844,6 @@ void glConnectionWidget::paintEvent(QPaintEvent * /*event*/ )
 
                 if (0 <= clickedNeuron && clickedNeuron <= currPop->layoutType->locations.size())
                 {
-                    qDebug() << "Population: " << clickedPopulation << ", Neuron: " << clickedNeuron;
-
                     QPainter painter(this);
                     painter.setRenderHint(QPainter::Antialiasing);
 
@@ -913,7 +909,10 @@ void glConnectionWidget::paintEvent(QPaintEvent * /*event*/ )
                         painter.setBrush(Qt::NoBrush);
                         QFont myFont;
                         QFontMetrics fm(myFont);
-                        painter.drawRect(fm.boundingRect(textRect, Qt::TextDontClip, neuronInfo));
+                        QRect border = fm.boundingRect(textRect, Qt::TextDontClip, neuronInfo);
+                        //Add some padding to make sure you can read
+                        border.adjust (-5, -5, 5, 5);
+                        painter.drawRect(border);
                     }
                         //painter.drawText(QRect(winX-(1.0-winZ)*600,this->height()-winY-(1.0-winZ)*600,40,20),QString::number(float(i)));
                         //painter.drawText(QRect((winX-(1.0-winZ)*220-20),this->height()-(winY-(1.0-winZ)*220+50),40,20),QString::number(float(i)));
@@ -933,8 +932,8 @@ void glConnectionWidget::paintEvent(QPaintEvent * /*event*/ )
     double diffticks=clock()-clock1;
     double diffms=(diffticks)/(CLOCKS_PER_SEC/1000);
 
-    qDebug() << "Paint event End, Time elapsed: " << diffms;
-    qDebug() << "Time dl: " << (clock3-clock2)/(CLOCKS_PER_SEC/1000);
+    qDebug() << "Paint event: " << diffms;
+    qDebug() << "Time connections: " << (clock3-clock2)/(CLOCKS_PER_SEC/1000);
 }
 
 void glConnectionWidget::drawNeuron(GLfloat r, int rings, int segments, QColor col) {
@@ -1224,7 +1223,7 @@ void glConnectionWidget::selectionChanged(QItemSelection top, QItemSelection) {
         }
 
     }
-    //qDebug() << "selected = " << selectedObject->getName();
+
     // redraw
     this->repaint();
 
@@ -1631,7 +1630,6 @@ void glConnectionWidget::getConnections() {
 void glConnectionWidget::sysSelectionChanged(QModelIndex, QModelIndex) {
 
     // this is fired when an item is checked or unchecked
-
     for (uint i = 0; i < data->populations.size(); ++i) {
 
         population * currPop = (population *) data->populations[i];
@@ -1712,6 +1710,8 @@ void glConnectionWidget::sysSelectionChanged(QModelIndex, QModelIndex) {
                                     ((pythonscript_connection *) currIn->connectionType)->setUnchanged(true);
                                 }
                             }
+                            //An element was added to the list, the display list needs to be recreated
+                            createConnectionsDL();
 
                         }
 
@@ -1747,6 +1747,7 @@ void glConnectionWidget::sysSelectionChanged(QModelIndex, QModelIndex) {
                             inList = true;
                     }
                     if (!inList) {
+
                         selectedConns.push_back(currTarg);
                         connections.resize(connections.size()+1);
 
@@ -1782,6 +1783,9 @@ void glConnectionWidget::sysSelectionChanged(QModelIndex, QModelIndex) {
                                 ((pythonscript_connection *) currTarg->connectionType)->setUnchanged(true);
                             }
                         }
+
+                        //An element was added to the list, the display list needs to be recreated
+                        createConnectionsDL();
 
                     }
                 } else {
@@ -1837,8 +1841,6 @@ void glConnectionWidget::mousePressEvent(QMouseEvent *event)
     origRot.setY(origRot.y() - rot.y()*2);
 
 
-    //qDebug() << "Mouse (" << event->x() << "," << event->y() << ")";
-
     // Alg that detectes clicked object
     if (button == Qt::LeftButton)
     {
@@ -1874,14 +1876,11 @@ void glConnectionWidget::mousePressEvent(QMouseEvent *event)
         glGetIntegerv(GL_VIEWPORT, viewport);
         glReadPixels(event->x(), this->height() - event->y(),1,1, GL_RGB, GL_UNSIGNED_BYTE, detectedColor);
 
-        //qDebug() << "Population: " << detectedColor[0] << ", Neuron: " << ((detectedColor[2] << 8) + detectedColor[1]);
-
         // Make sure the population exists and is visible
         if (0 <= detectedColor[0] &&  detectedColor[0] <= data->populations.size()) {
             if (data->populations[detectedColor[0]]->isVisualised)
             {
                 int selectedNeuron = (detectedColor[2] << 8) + detectedColor[1];
-                qDebug() << "Population: " << detectedColor[0] << ", Neuron: " << selectedNeuron;
 
                 population * currPop = data->populations[detectedColor[0]];
 
@@ -1905,15 +1904,7 @@ void glConnectionWidget::mousePressEvent(QMouseEvent *event)
         {
             clickedPopulation = -1;
         }
-
-
     }
-
-
-
-    //qDebug() << this->width();
-    //qDebug() << this->height();
-
 }
 
 void glConnectionWidget::mouseReleaseEvent(QMouseEvent *){
@@ -1971,8 +1962,6 @@ void glConnectionWidget::createPopulationsDL()
 {
     if (data)
     {
-        qDebug() << "Start creating the display lists for populations";
-
         // fetch quality setting
         QSettings settings;
         int quality = settings.value("glOptions/detail", 5).toInt();
@@ -1992,7 +1981,6 @@ void glConnectionWidget::createPopulationsDL()
             LoD = 64;
 
         for(uint locNum = 0; locNum < data->populations.size(); locNum++) {
-            //qDebug() << "Population: "+data->populations[locNum]->name;
             population * currPop = data->populations[locNum];
 
             // add some neurons!
@@ -2017,8 +2005,6 @@ void glConnectionWidget::createPopulationsDL()
 
             // start the display list
             glNewList(currPop->dlIndex, GL_COMPILE);
-
-            //qDebug() << iasd;
 
             for (uint i = 0; i < currPop->layoutType->locations.size(); ++i) {
 
@@ -2050,8 +2036,6 @@ void glConnectionWidget::createPopulationsDL()
             // start the display list
             glNewList(currPop->dlIndexCol, GL_COMPILE);
 
-            //qDebug() << iasd;
-
             for (uint i = 0; i < currPop->layoutType->locations.size(); ++i) {
 
                 glPushMatrix();
@@ -2076,14 +2060,12 @@ void glConnectionWidget::createPopulationsDL()
 
             glEndList();
         }
-
-        qDebug() << "Finish creating the display lists";
     }
 }
 
 void glConnectionWidget::createConnectionsDL()
 {
-    qDebug() << "Start creating the display lists for connections";
+    //qDebug() << "Start creating the display lists for connections";
 
     // work out scaling for line widths:
     float lineScaleFactor;
@@ -2095,7 +2077,6 @@ void glConnectionWidget::createConnectionsDL()
        lineScaleFactor = 1.0;
 
 
-    // draw synapses
     for (uint targNum = 0; targNum < this->selectedConns.size(); ++targNum) {
 
         // draw the connections:
@@ -2106,13 +2087,13 @@ void glConnectionWidget::createConnectionsDL()
         population * dst;
         connection * conn;
 
-        if (selectedConns[targNum]->type == synapseObject) {
-            synapse * currTarg = (synapse *) selectedConns[targNum];
+        if (this->selectedConns[targNum]->type == synapseObject) {
+            synapse * currTarg = (synapse *) this->selectedConns[targNum];
             conn = currTarg->connectionType;
             src = currTarg->proj->source;
             dst = currTarg->proj->destination;
         } else {
-            genericInput * currIn = (genericInput *) selectedConns[targNum];
+            genericInput * currIn = (genericInput *) this->selectedConns[targNum];
             conn = currIn->connectionType;
             src = (population *) currIn->source; // would not be here if this was not true
             dst = (population *) currIn->destination;
@@ -2133,6 +2114,7 @@ void glConnectionWidget::createConnectionsDL()
             srcZ = src->loc3.z;
         }
 
+
         float dstX;
         float dstY;
         float dstZ;
@@ -2147,6 +2129,8 @@ void glConnectionWidget::createConnectionsDL()
             dstY = dst->loc3.y;
             dstZ = dst->loc3.z;
         }
+
+
 
         // check we have the current version of the connectivity
         if (conn->type == CSV) {
@@ -2177,22 +2161,25 @@ void glConnectionWidget::createConnectionsDL()
 
             // create the index with the display lists
             // start the display list
-            if (selectedConns[targNum]->type == synapseObject) {
-                synapse * currObj = (synapse *)selectedConns[targNum];
+            if (this->selectedConns[targNum]->type == synapseObject) {
+                synapse * currObj = (synapse *)this->selectedConns[targNum];
 
                 glDeleteLists(currObj->dlIndex,1);
                 currObj->dlIndex = glGenLists(1);
                 glNewList(currObj->dlIndex, GL_COMPILE);
 
-                qDebug() << "Con: " << currObj->getName() << " dlIndex: " << currObj->dlIndex;
-
                 aux_strength = currObj->strength;
                 center = currObj->center;
 
             } else {
-                glDeleteLists(((genericInput *) selectedConns[targNum])->dlIndex,1);
-                ((genericInput *) selectedConns[targNum])->dlIndex = glGenLists(1);
-                glNewList(((genericInput *)selectedConns[targNum])->dlIndex, GL_COMPILE);
+                genericInput * currObj = (genericInput *)this->selectedConns[targNum];
+
+                glDeleteLists(currObj->dlIndex,1);
+                currObj->dlIndex = glGenLists(1);
+                glNewList(currObj->dlIndex, GL_COMPILE);
+
+                aux_strength = currObj->strength;
+                center = currObj->center;
             }
 
             for (uint i = 0; i < connections[targNum].size(); ++i) {
@@ -2259,12 +2246,12 @@ void glConnectionWidget::createConnectionsDL()
 
             glEndList();
             connGenerationMutex->unlock();
+
+
         }
     }
 
-
-
-    qDebug() << "Finish creating the display lists for connections";
+    //qDebug() << "Finish creating the display lists for connections";
 }
 
 

@@ -281,10 +281,10 @@ private:
     bool firstRedo;
 };
 
-class setStrengthUndo : public QUndoCommand
+class setStrengthSynapseUndo : public QUndoCommand
 {
 public:
-    setStrengthUndo(rootData * data, synapse * ptr, int value, QUndoCommand *parent = 0);
+    setStrengthSynapseUndo(rootData * data, synapse * ptr, int value, QUndoCommand *parent = 0);
     void undo();
     void redo();
 
@@ -292,6 +292,22 @@ private:
     // these references are needed for the redo and undo
     rootData * data;
     synapse * ptr;
+    int oldValue;
+    int value;
+    bool firstRedo;
+};
+
+class setStrengthInputUndo : public QUndoCommand
+{
+public:
+    setStrengthInputUndo(rootData * data, genericInput * ptr, int value, QUndoCommand *parent = 0);
+    void undo();
+    void redo();
+
+private:
+    // these references are needed for the redo and undo
+    rootData * data;
+    genericInput * ptr;
     int oldValue;
     int value;
     bool firstRedo;
@@ -313,10 +329,10 @@ private:
     int index;
 };
 
-class setCenterUndo : public QUndoCommand
+class setCenterSynapseUndo : public QUndoCommand
 {
 public:
-    setCenterUndo(rootData * data, synapse * ptr, int index, int value, QUndoCommand *parent = 0);
+    setCenterSynapseUndo(rootData * data, synapse * ptr, int index, int value, QUndoCommand *parent = 0);
     void undo();
     void redo();
 
@@ -324,6 +340,22 @@ private:
     // these references are needed for the redo and undo
     rootData * data;
     synapse * ptr;
+    int oldValue;
+    int value;
+    int index;
+};
+
+class setCenterInputUndo : public QUndoCommand
+{
+public:
+    setCenterInputUndo(rootData * data, genericInput * ptr, int index, int value, QUndoCommand *parent = 0);
+    void undo();
+    void redo();
+
+private:
+    // these references are needed for the redo and undo
+    rootData * data;
+    genericInput * ptr;
     int oldValue;
     int value;
     int index;

@@ -945,6 +945,19 @@ void viewVZLayoutEditHandler::redrawProperties() {
             connectionComboBox->model()->setData(ind, QVariant(1), Qt::UserRole-1);
         }
 
+        strengthSpin->disconnect(this->viewVZ->OpenGLWidget);
+        xConSpin->disconnect(this->viewVZ->OpenGLWidget);
+        yConSpin->disconnect(this->viewVZ->OpenGLWidget);
+        zConSpin->disconnect(this->viewVZ->OpenGLWidget);
+        emit setConnectionStrength(input->strength);
+        emit setConnectionCenterX(input->center[0]);
+        emit setConnectionCenterY(input->center[1]);
+        emit setConnectionCenterZ(input->center[2]);
+        connect(strengthSpin, SIGNAL(editingFinished()), this->viewVZ->OpenGLWidget, SLOT (updateConnections()));
+        connect(xConSpin, SIGNAL(editingFinished()), this->viewVZ->OpenGLWidget, SLOT (updateConnections()));
+        connect(yConSpin, SIGNAL(editingFinished()), this->viewVZ->OpenGLWidget, SLOT (updateConnections()));
+        connect(zConSpin, SIGNAL(editingFinished()), this->viewVZ->OpenGLWidget, SLOT (updateConnections()));
+
         // set index
         connectionComboBox->disconnect(data);
         connectionComboBox->setCurrentIndex(input->connectionType->getIndex());
@@ -979,10 +992,10 @@ void viewVZLayoutEditHandler::redrawProperties() {
         xConSpin->disconnect(this->viewVZ->OpenGLWidget);
         yConSpin->disconnect(this->viewVZ->OpenGLWidget);
         zConSpin->disconnect(this->viewVZ->OpenGLWidget);
-        emit setConnectionStrength(((synapse *) this->viewVZ->currObject)->strength);
-        emit setConnectionCenterX(((synapse *) this->viewVZ->currObject)->center[0]);
-        emit setConnectionCenterY(((synapse *) this->viewVZ->currObject)->center[1]);
-        emit setConnectionCenterZ(((synapse *) this->viewVZ->currObject)->center[2]);
+        emit setConnectionStrength(syn->strength);
+        emit setConnectionCenterX(syn->center[0]);
+        emit setConnectionCenterY(syn->center[1]);
+        emit setConnectionCenterZ(syn->center[2]);
         connect(strengthSpin, SIGNAL(editingFinished()), this->viewVZ->OpenGLWidget, SLOT (updateConnections()));
         connect(xConSpin, SIGNAL(editingFinished()), this->viewVZ->OpenGLWidget, SLOT (updateConnections()));
         connect(yConSpin, SIGNAL(editingFinished()), this->viewVZ->OpenGLWidget, SLOT (updateConnections()));

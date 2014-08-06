@@ -249,6 +249,26 @@ private:
     synapse* currSelConnection();
 
     /*!
+     * \brief Obtain the currently selected inputs
+     *
+     * \return A vector of pointers to all currently selected
+     * inputs.
+     */
+    vector<genericInput*> currSelInputs();
+
+    /*!
+     * \brief Obtain the currently selected input.
+     *
+     * Obtain the currently selected synapse if only a single
+     * input is selected. If no inputs are selected, return
+     * NULL. If more than one input is selected, return NULL.
+     *
+     * \return pointer to the selected input, if only a single
+     * input is selected; otherwise NULL.
+     */
+    genericInput* currSelInput();
+
+    /*!
      * Action to take when a mouse down event has changed selected objects.
      */
     void onNewSelections (float xGL, float yGL);

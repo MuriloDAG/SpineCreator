@@ -1459,7 +1459,7 @@ population* rootData::currSelPopulation()
 
 vector<synapse*> rootData::currSelConnections()
 {
-    // get the currently selected populations (ALL of them)
+    // get the currently selected synapses (ALL of them)
     vector<synapse*> currSel;
     vector<systemObject*>::const_iterator i = this->selList.begin();
     while (i != this->selList.end()) {
@@ -1473,11 +1473,37 @@ vector<synapse*> rootData::currSelConnections()
 
 synapse* rootData::currSelConnection()
 {
-    // get the currently selected population
+    // get the currently selected synapse
     synapse* currSel = NULL;
     if (this->selList.size() == 1) {
         if (this->selList[0]->type == synapseObject) {
             currSel = (synapse*) this->selList[0];
+        }
+    }
+    return currSel;
+}
+
+vector<genericInput*> rootData::currSelInputs()
+{
+    // get the currently selected synapses (ALL of them)
+    vector<genericInput*> currSel;
+    vector<systemObject*>::const_iterator i = this->selList.begin();
+    while (i != this->selList.end()) {
+        if ((*i)->type == inputObject) {
+            currSel.push_back (static_cast<genericInput*>(*i));
+        }
+        ++i;
+    }
+    return currSel;
+}
+
+genericInput* rootData::currSelInput()
+{
+    // get the currently selected synapse
+    genericInput* currSel = NULL;
+    if (this->selList.size() == 1) {
+        if (this->selList[0]->type == inputObject) {
+            currSel = (genericInput*) this->selList[0];
         }
     }
     return currSel;
@@ -1533,20 +1559,33 @@ void rootData::setSize()
 
 void rootData::setStrength()
 {
-    // get the currently selected population
+    // get the currently selected connection
     synapse * currSel = this->currSelConnection();
-
-
-    if (currSel == NULL) {
-        return;
-    }
 
     // get value
     int value = ((QSpinBox *) sender())->value();
 
-    // only update if we have a change
-    if (value != currSel->strength) {
-        currProject->undoStack->push(new setStrengthUndo(this, currSel, value));
+    //Could not find a synapse, lets try an input
+    if (currSel == NULL) {
+        // get the currently selected connection
+        genericInput * currInp = this->currSelInput();
+
+        if (currInp != NULL) {
+            // Found a input, save the value
+            if (value != currInp->strength) {
+                currProject->undoStack->push(new setStrengthInputUndo(this, currInp, value));
+            }
+        }
+        else {
+            return;
+        }
+    }
+    else {
+        //Found a selected synpase, save the value
+        // only update if we have a change
+        if (value != currSel->strength) {
+            currProject->undoStack->push(new setStrengthSynapseUndo(this, currSel, value));
+        }
     }
 }
 
@@ -1570,14 +1609,28 @@ void rootData::setCenter()
     // get the currently selected population
     synapse * currSel = this->currSelConnection();
 
-    if (currSel == NULL) {
-        return;
-    }
-
+    // Get the value and the index
     int index = sender()->property("type").toInt();
     int value = ((QSpinBox *) sender())->value();
 
-    currProject->undoStack->push(new setCenterUndo(this, currSel, index, value));
+    //Could not find a synapse, lets try an input
+    if (currSel == NULL) {
+        // get the currently selected connection
+        genericInput * currInp = this->currSelInput();
+
+        if (currInp != NULL) {
+            // Found a input, save the value
+            if (value != currInp->strength) {
+                currProject->undoStack->push(new setCenterInputUndo(this, currInp, index, value));
+            }
+        }
+        else {
+            return;
+        }
+    }
+    else {
+        currProject->undoStack->push(new setCenterSynapseUndo(this, currSel, index, value));
+    }
 }
 
 void rootData::renamePopulation()

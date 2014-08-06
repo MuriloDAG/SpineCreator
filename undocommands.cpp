@@ -874,9 +874,9 @@ void setSizeUndo::redo()
     firstRedo = false;
 }
 
-// ######## SET STRENGTH #################
+// ######## SET STRENGTH SYNAPSE #################
 
-setStrengthUndo::setStrengthUndo(rootData * data, synapse * ptr, int value, QUndoCommand *parent) :
+setStrengthSynapseUndo::setStrengthSynapseUndo(rootData * data, synapse * ptr, int value, QUndoCommand *parent) :
     QUndoCommand(parent)
 {
     this->value = value;
@@ -887,7 +887,7 @@ setStrengthUndo::setStrengthUndo(rootData * data, synapse * ptr, int value, QUnd
     firstRedo = true;
 }
 
-void setStrengthUndo::undo()
+void setStrengthSynapseUndo::undo()
 {
     ptr->strength = oldValue;
     if (data->main->viewVZ.OpenGLWidget != NULL) {
@@ -896,7 +896,41 @@ void setStrengthUndo::undo()
     data->reDrawPanel();
 }
 
-void setStrengthUndo::redo()
+void setStrengthSynapseUndo::redo()
+{
+    ptr->strength = value;
+    if (data->main->viewVZ.OpenGLWidget != NULL) {
+        data->main->viewVZ.OpenGLWidget->parsChangedProjections();
+    }
+    if (!firstRedo) {
+        data->reDrawPanel();
+    }
+    firstRedo = false;
+}
+
+// ######## SET STRENGTH INPUT #################
+
+setStrengthInputUndo::setStrengthInputUndo(rootData * data, genericInput * ptr, int value, QUndoCommand *parent) :
+    QUndoCommand(parent)
+{
+    this->value = value;
+    this->oldValue = ptr->strength;
+    this->ptr = ptr;
+    this->data = data;
+    this->setText("set " + this->ptr->getName() + " strength to " + QString::number(value));
+    firstRedo = true;
+}
+
+void setStrengthInputUndo::undo()
+{
+    ptr->strength = oldValue;
+    if (data->main->viewVZ.OpenGLWidget != NULL) {
+        data->main->viewVZ.OpenGLWidget->parsChangedProjections();
+    }
+    data->reDrawPanel();
+}
+
+void setStrengthInputUndo::redo()
 {
     ptr->strength = value;
     if (data->main->viewVZ.OpenGLWidget != NULL) {
@@ -951,9 +985,9 @@ void setLoc3Undo::redo()
         ptr->loc3.z = value;
 }
 
-// ######## SET CENTER 3D #################
+// ######## SET CENTER SYNAPSE 3D #################
 
-setCenterUndo::setCenterUndo(rootData * data, synapse * ptr, int index, int value, QUndoCommand *parent) :
+setCenterSynapseUndo::setCenterSynapseUndo(rootData * data, synapse * ptr, int index, int value, QUndoCommand *parent) :
     QUndoCommand(parent)
 {
     this->index = index;
@@ -974,7 +1008,7 @@ setCenterUndo::setCenterUndo(rootData * data, synapse * ptr, int index, int valu
         this->setText("set " + this->ptr->getName() + " z location to " + QString::number(value));
 }
 
-void setCenterUndo::undo()
+void setCenterSynapseUndo::undo()
 {
     if (index == 0)
         ptr->center[0] = oldValue;
@@ -984,7 +1018,7 @@ void setCenterUndo::undo()
         ptr->center[2] = oldValue;
 }
 
-void setCenterUndo::redo()
+void setCenterSynapseUndo::redo()
 {
     if (index == 0)
         ptr->center[0] = value;
@@ -993,6 +1027,50 @@ void setCenterUndo::redo()
     if (index == 2)
         ptr->center[2] = value;
 }
+
+// ######## SET CENTER INPUT 3D #################
+
+setCenterInputUndo::setCenterInputUndo(rootData * data, genericInput * ptr, int index, int value, QUndoCommand *parent) :
+    QUndoCommand(parent)
+{
+    this->index = index;
+    this->value = value;
+    if (index == 0)
+        this->oldValue = ptr->center[0];
+    if (index == 1)
+        this->oldValue = ptr->center[1];
+    if (index == 2)
+        this->oldValue = ptr->center[2];
+    this->ptr = ptr;
+    this->data = data;
+    if (index == 0)
+        this->setText("set " + this->ptr->getName() + " x location to " + QString::number(value));
+    if (index == 1)
+        this->setText("set " + this->ptr->getName() + " y location to " + QString::number(value));
+    if (index == 2)
+        this->setText("set " + this->ptr->getName() + " z location to " + QString::number(value));
+}
+
+void setCenterInputUndo::undo()
+{
+    if (index == 0)
+        ptr->center[0] = oldValue;
+    if (index == 1)
+        ptr->center[1] = oldValue;
+    if (index == 2)
+        ptr->center[2] = oldValue;
+}
+
+void setCenterInputUndo::redo()
+{
+    if (index == 0)
+        ptr->center[0] = value;
+    if (index == 1)
+        ptr->center[1] = value;
+    if (index == 2)
+        ptr->center[2] = value;
+}
+
 
 // ######## UPDATE PAR #################
 
