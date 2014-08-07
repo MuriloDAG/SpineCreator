@@ -1633,6 +1633,34 @@ void rootData::setCenter()
     }
 }
 
+void rootData::setColorScheme()
+{
+    // get the currently selected population
+    synapse * currSel = this->currSelConnection();
+    bool value = ((QCheckBox *) sender())->isChecked();
+
+    //Could not find a synapse, lets try an input
+    if (currSel == NULL) {
+        // get the currently selected connection
+        genericInput * currInp = this->currSelInput();
+
+        if (currInp != NULL) {
+            // Found a input, save the value
+            if (value != currInp->colorScheme) {
+                currInp->colorScheme = value;
+            }
+        }
+        else {
+            return;
+        }
+    }
+    else {
+        if (value != currSel->colorScheme) {
+            currSel->colorScheme = value;
+        }
+    }
+}
+
 void rootData::renamePopulation()
 {
     // get the currently selected population

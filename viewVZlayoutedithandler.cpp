@@ -658,6 +658,23 @@ void viewVZLayoutEditHandler::initConnection() {
     tempBox->addStretch();
 
 
+    colorScheme = new QCheckBox (tr("Colouring scheme"));
+    tempBox->addWidget(colorScheme);
+
+
+    // connect for hide
+    connect(this, SIGNAL(hideAll()), colorScheme, SLOT(hide()));
+    // connect for show
+    connect(this, SIGNAL(showConnection()), colorScheme, SLOT(show()));
+
+
+    connect(this, SIGNAL(setColourScheme(bool)), colorScheme, SLOT(setChecked(bool)));
+    connect(colorScheme, SIGNAL(clicked()), this->data, SLOT (setColorScheme()));
+    connect(colorScheme, SIGNAL(clicked()), this->viewVZ->OpenGLWidget, SLOT (updateConnections()));
+
+
+    tempBox->addStretch();
+
 
 
     // STOP
@@ -958,6 +975,10 @@ void viewVZLayoutEditHandler::redrawProperties() {
         connect(yConSpin, SIGNAL(editingFinished()), this->viewVZ->OpenGLWidget, SLOT (updateConnections()));
         connect(zConSpin, SIGNAL(editingFinished()), this->viewVZ->OpenGLWidget, SLOT (updateConnections()));
 
+        colorScheme->disconnect(this->viewVZ->OpenGLWidget);
+        emit setColourScheme(input->colorScheme);
+        connect(colorScheme, SIGNAL(clicked()), this->viewVZ->OpenGLWidget, SLOT (updateConnections()));
+
         // set index
         connectionComboBox->disconnect(data);
         connectionComboBox->setCurrentIndex(input->connectionType->getIndex());
@@ -1000,6 +1021,11 @@ void viewVZLayoutEditHandler::redrawProperties() {
         connect(xConSpin, SIGNAL(editingFinished()), this->viewVZ->OpenGLWidget, SLOT (updateConnections()));
         connect(yConSpin, SIGNAL(editingFinished()), this->viewVZ->OpenGLWidget, SLOT (updateConnections()));
         connect(zConSpin, SIGNAL(editingFinished()), this->viewVZ->OpenGLWidget, SLOT (updateConnections()));
+
+        colorScheme->disconnect(this->viewVZ->OpenGLWidget);
+        emit setColourScheme(syn->colorScheme);
+        connect(colorScheme, SIGNAL(clicked()), this->viewVZ->OpenGLWidget, SLOT (updateConnections()));
+
 
         // set index
         connectionComboBox->disconnect(data);
@@ -1775,8 +1801,6 @@ QHBoxLayout * viewVZLayoutEditHandler::drawTransform(QVariant transContainer, Tr
     return transLay;
 
 }
-
-
 
 void viewVZLayoutEditHandler::transformOrderDown() {
 

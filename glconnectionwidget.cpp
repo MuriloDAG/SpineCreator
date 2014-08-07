@@ -2132,8 +2132,6 @@ void glConnectionWidget::createConnectionsDL()
             dstZ = dst->loc3.z;
         }
 
-
-
         // check we have the current version of the connectivity
         if (conn->type == CSV) {
             csv_connection * csv_conn = (csv_connection *) conn;
@@ -2160,6 +2158,7 @@ void glConnectionWidget::createConnectionsDL()
             int aux_strength = 0;
             //If aux_strength is zero, center is not used.
             GLfloat * center;
+            bool colourScheme = false;
 
             // create the index with the display lists
             // start the display list
@@ -2172,6 +2171,7 @@ void glConnectionWidget::createConnectionsDL()
 
                 aux_strength = currObj->strength;
                 center = currObj->center;
+                colourScheme = currObj->colorScheme;
 
             } else {
                 genericInput * currObj = (genericInput *)this->selectedConns[targNum];
@@ -2182,14 +2182,38 @@ void glConnectionWidget::createConnectionsDL()
 
                 aux_strength = currObj->strength;
                 center = currObj->center;
+                colourScheme = currObj->colorScheme;
             }
+
+            float colourStep;
+            float minColourValue = 0;
+            float maxColourValue = 0;
+
+
+            if (colourScheme) {
+                if (connections[targNum].size() > 0) {
+                    minColourValue = connections[targNum][0].metric;
+                    maxColourValue = connections[targNum][0].metric;
+
+                    for (uint i = 1; i < connections[targNum].size(); ++i) {
+                        if (minColourValue > connections[targNum][i].metric)
+                            minColourValue = connections[targNum][i].metric;
+                        if (maxColourValue < connections[targNum][i].metric)
+                            maxColourValue = connections[targNum][i].metric;
+                    }
+                }
+            }
+
+            colourStep = 1/(maxColourValue-minColourValue);
 
             for (uint i = 0; i < connections[targNum].size(); ++i) {
 
                 if (connections[targNum][i].src < src->layoutType->locations.size() && connections[targNum][i].dst < dst->layoutType->locations.size()) {
                     glLineWidth(1.0 * lineScaleFactor);
-
-                    glColor4f(0.0, 0.0, 0.0, 0.1);
+                    if (colourScheme > 0)
+                        glColor4f(0.0, 0.0, (connections[targNum][i].metric) * colourStep, 1);
+                    else
+                        glColor4f(0.0, 0.0, 0.0, 0.1);
 
                     // draw in
 
@@ -2354,3 +2378,5 @@ QPixmap glConnectionWidget::renderImage(int width, int height) {
     return pix;
 
 }
+
+

@@ -76,6 +76,7 @@ public:
 
     GLfloat center[3];
     int strength;
+    bool colorScheme;
 };
 
 class projection : public systemObject

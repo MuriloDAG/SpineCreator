@@ -71,6 +71,7 @@ public:
 
     GLfloat center[3];
     int strength;
+    int colorScheme;
 
 
 };

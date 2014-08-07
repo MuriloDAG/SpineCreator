@@ -158,6 +158,7 @@ public slots:
     void setStrength();
     void setLoc3();
     void setCenter();
+    void setColorScheme();
     void addPopulation();
     void addSpikeSource();
     void renamePopulation();

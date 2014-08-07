@@ -63,6 +63,7 @@ synapse::synapse(projection * proj, projectObject * data, bool dontAddInputs) {
     this->center[0] = 0;
     this->center[1] = 0;
     this->center[2] = 0;
+    this->colorScheme = 0;
 }
 
 synapse::synapse(projection * proj, rootData * data, bool dontAddInputs) {
@@ -100,6 +101,7 @@ synapse::synapse(projection * proj, rootData * data, bool dontAddInputs) {
     this->center[0] = 0;
     this->center[1] = 0;
     this->center[2] = 0;
+    this->colorScheme = 0;
 }
 
 

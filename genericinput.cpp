@@ -44,6 +44,7 @@ genericInput::genericInput()
     this->center[0] = 0;
     this->center[1] = 0;
     this->center[2] = 0;
+    this->colorScheme = 0;
 }
 
 genericInput::genericInput(NineMLComponentData * src, NineMLComponentData * dst, bool projInput) {
@@ -85,6 +86,7 @@ genericInput::genericInput(NineMLComponentData * src, NineMLComponentData * dst,
     this->center[0] = 0;
     this->center[1] = 0;
     this->center[2] = 0;
+    this->colorScheme = 0;
 }
 
 void genericInput::connect() {
